@@ -1,17 +1,20 @@
 """Release tools."""
 
-from typing import cast
-
 import httpx
-from gitlab.v4.objects import ProjectRelease
 
 from gitlab_mcp.server import mcp
 from gitlab_mcp.client import get_project
 from gitlab_mcp.config import get_config
 from gitlab_mcp.models import ReleaseSummary
+from gitlab_mcp.models.releases import (
+    ReleaseDeleteResult,
+    ReleaseEvidence,
+    ReleaseAssetDownload,
+    ReleaseLink,
+    ReleaseLinkDeleteResult,
+)
 from gitlab_mcp.utils.pagination import paginate
 from gitlab_mcp.utils.query import build_sort
-from gitlab_mcp.utils.serialization import serialize_pydantic
 
 
 @mcp.tool(
@@ -21,7 +24,6 @@ from gitlab_mcp.utils.serialization import serialize_pydantic
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def list_releases(
     project_id: str,
     per_page: int = 20,
@@ -43,7 +45,7 @@ def list_releases(
         per_page=per_page,
         **filters,
     )
-    return [ReleaseSummary.model_validate(r, from_attributes=True) for r in releases]
+    return [ReleaseSummary.from_gitlab(r) for r in releases]
 
 
 @mcp.tool(
@@ -53,7 +55,6 @@ def list_releases(
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def get_release(project_id: str, tag_name: str) -> ReleaseSummary:
     """Get details of a release.
 
@@ -62,8 +63,8 @@ def get_release(project_id: str, tag_name: str) -> ReleaseSummary:
         tag_name: Release tag name
     """
     project = get_project(project_id)
-    release = cast(ProjectRelease, project.releases.get(tag_name))
-    return ReleaseSummary.model_validate(release, from_attributes=True)
+    release = project.releases.get(tag_name)
+    return ReleaseSummary.from_gitlab(release)
 
 
 @mcp.tool(
@@ -75,7 +76,6 @@ def get_release(project_id: str, tag_name: str) -> ReleaseSummary:
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def create_release(
     project_id: str,
     tag_name: str,
@@ -101,7 +101,7 @@ def create_release(
     if ref:
         data["ref"] = ref
     release = project.releases.create(data)
-    return ReleaseSummary.model_validate(release, from_attributes=True)
+    return ReleaseSummary.from_gitlab(release)
 
 
 @mcp.tool(
@@ -113,7 +113,6 @@ def create_release(
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def update_release(
     project_id: str,
     tag_name: str,
@@ -129,13 +128,13 @@ def update_release(
         description: New description (leave empty to keep current)
     """
     project = get_project(project_id)
-    release = cast(ProjectRelease, project.releases.get(tag_name))
+    release = project.releases.get(tag_name)
     if name:
         release.name = name
     if description:
         release.description = description
     release.save()
-    return ReleaseSummary.model_validate(release, from_attributes=True)
+    return ReleaseSummary.from_gitlab(release)
 
 
 @mcp.tool(
@@ -147,7 +146,7 @@ def update_release(
         "openWorldHint": True,
     }
 )
-def delete_release(project_id: str, tag_name: str, keep_tag: bool = False) -> dict[str, str | bool]:
+def delete_release(project_id: str, tag_name: str, keep_tag: bool = False) -> ReleaseDeleteResult:
     """Delete a release.
 
     Note: By default, this deletes both the release and the git tag.
@@ -160,7 +159,7 @@ def delete_release(project_id: str, tag_name: str, keep_tag: bool = False) -> di
     """
     project = get_project(project_id)
     project.releases.delete(tag_name, keep_tag=keep_tag)
-    return {"status": "deleted", "tag_name": tag_name, "keep_tag": keep_tag}
+    return ReleaseDeleteResult.model_validate({"status": "deleted", "tag_name": tag_name, "keep_tag": keep_tag})
 
 
 @mcp.tool(
@@ -172,7 +171,7 @@ def delete_release(project_id: str, tag_name: str, keep_tag: bool = False) -> di
         "openWorldHint": True,
     }
 )
-def create_release_evidence(project_id: str, tag_name: str) -> dict[str, str | int | None]:
+def create_release_evidence(project_id: str, tag_name: str) -> ReleaseEvidence:
     """Create release evidence for a release.
 
     Args:
@@ -180,26 +179,26 @@ def create_release_evidence(project_id: str, tag_name: str) -> dict[str, str | i
         tag_name: Release tag name
 
     Returns:
-        Dictionary with evidence metadata
+        Evidence metadata
     """
     config = get_config()
     project = get_project(project_id)
     # Verify release exists
-    cast(ProjectRelease, project.releases.get(tag_name))
+    project.releases.get(tag_name)
 
     # Create evidence via API
     with httpx.Client(headers={"PRIVATE-TOKEN": config.token}) as client:
-        url = f"{config.gitlab_url}/api/v4/projects/{cast(int, project.id)}/releases/{tag_name}/evidence"
+        url = f"{config.gitlab_url}/api/v4/projects/{project.id}/releases/{tag_name}/evidence"
         response = client.post(url, json={})
         response.raise_for_status()
         data = response.json()
 
-    return {
+    return ReleaseEvidence.model_validate({
         "id": data.get("id"),
         "tag_name": tag_name,
         "status": "created",
-        "evidence_url": data.get("evidence_file_path"),
-    }
+        "evidence_file_path": data.get("evidence_file_path"),
+    })
 
 
 @mcp.tool(
@@ -211,7 +210,7 @@ def create_release_evidence(project_id: str, tag_name: str) -> dict[str, str | i
 )
 def download_release_asset(
     project_id: str, tag_name: str, asset_path: str, output_path: str = ""
-) -> dict[str, str | int]:
+) -> ReleaseAssetDownload:
     """Download a release asset.
 
     Args:
@@ -221,7 +220,7 @@ def download_release_asset(
         output_path: Path to save file (defaults to current directory + filename)
 
     Returns:
-        Dictionary with download status and file metadata
+        Download status and file metadata
     """
     config = get_config()
 
@@ -238,13 +237,13 @@ def download_release_asset(
     with open(save_path, "wb") as f:
         f.write(response.content)
 
-    return {
+    return ReleaseAssetDownload.model_validate({
         "status": "downloaded",
         "tag_name": tag_name,
         "filename": filename,
         "path": save_path,
         "size_bytes": len(response.content),
-    }
+    })
 
 
 @mcp.tool(
@@ -254,7 +253,7 @@ def download_release_asset(
         "openWorldHint": True,
     }
 )
-def list_release_links(project_id: str, tag_name: str) -> list[dict[str, str | int]]:
+def list_release_links(project_id: str, tag_name: str) -> list[ReleaseLink]:
     """List all links/assets attached to a release.
 
     Args:
@@ -262,18 +261,9 @@ def list_release_links(project_id: str, tag_name: str) -> list[dict[str, str | i
         tag_name: Release tag name
     """
     project = get_project(project_id)
-    release = cast(ProjectRelease, project.releases.get(tag_name))
+    release = project.releases.get(tag_name)
     links = release.releaselinks.list(get_all=True)
-    return [
-        {
-            "id": link.id,
-            "name": link.name,
-            "url": link.url,
-            "link_type": link.link_type,
-            "created_at": link.created_at,
-        }
-        for link in links
-    ]
+    return [ReleaseLink.from_gitlab(link) for link in links]
 
 
 @mcp.tool(
@@ -291,7 +281,7 @@ def create_release_link(
     name: str,
     url: str,
     link_type: str = "other",
-) -> dict[str, str | int]:
+) -> ReleaseLink:
     """Add a link to a release.
 
     Args:
@@ -302,15 +292,9 @@ def create_release_link(
         link_type: Type of link (runbook, image, package, other)
     """
     project = get_project(project_id)
-    release = cast(ProjectRelease, project.releases.get(tag_name))
+    release = project.releases.get(tag_name)
     link = release.releaselinks.create({"name": name, "url": url, "link_type": link_type})
-    return {
-        "id": link.id,
-        "name": link.name,
-        "url": link.url,
-        "link_type": link.link_type,
-        "created_at": link.created_at,
-    }
+    return ReleaseLink.from_gitlab(link)
 
 
 @mcp.tool(
@@ -321,7 +305,7 @@ def create_release_link(
         "openWorldHint": True,
     }
 )
-def delete_release_link(project_id: str, tag_name: str, link_id: int) -> dict[str, str | int]:
+def delete_release_link(project_id: str, tag_name: str, link_id: int) -> ReleaseLinkDeleteResult:
     """Delete a link from a release.
 
     Args:
@@ -330,6 +314,6 @@ def delete_release_link(project_id: str, tag_name: str, link_id: int) -> dict[st
         link_id: Release link ID
     """
     project = get_project(project_id)
-    release = cast(ProjectRelease, project.releases.get(tag_name))
+    release = project.releases.get(tag_name)
     release.releaselinks.delete(link_id)
-    return {"status": "deleted", "link_id": link_id, "tag_name": tag_name}
+    return ReleaseLinkDeleteResult.model_validate({"status": "deleted", "link_id": link_id, "tag_name": tag_name})

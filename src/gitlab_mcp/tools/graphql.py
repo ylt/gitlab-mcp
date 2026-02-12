@@ -7,7 +7,6 @@ import httpx
 from gitlab_mcp.config import get_config
 from gitlab_mcp.models.graphql import GraphQLResponse, PaginationResult
 from gitlab_mcp.server import mcp
-from gitlab_mcp.utils.serialization import serialize_pydantic
 
 
 # Common pre-built GraphQL queries
@@ -198,7 +197,9 @@ def validate_query(query: str) -> bool:
     return brace_count == 0
 
 
-def _execute_graphql_internal(query: str, variables: dict[str, Any] | None = None) -> dict[str, Any]:
+def _execute_graphql_internal(
+    query: str, variables: dict[str, Any] | None = None
+) -> dict[str, Any]:
     """Internal GraphQL execution logic.
 
     Args:
@@ -236,13 +237,8 @@ def _execute_graphql_internal(query: str, variables: dict[str, Any] | None = Non
 
 
 @mcp.tool(
-    annotations={
-        "title": "Execute GraphQL Query",
-        "readOnlyHint": True,
-        "openWorldHint": True
-    }
+    annotations={"title": "Execute GraphQL Query", "readOnlyHint": True, "openWorldHint": True}
 )
-@serialize_pydantic
 def execute_graphql(query: str, variables: dict[str, Any] | None = None) -> GraphQLResponse:
     """Execute a GitLab GraphQL query.
 
@@ -257,17 +253,12 @@ def execute_graphql(query: str, variables: dict[str, Any] | None = None) -> Grap
         Query result with data and/or errors
     """
     result = _execute_graphql_internal(query, variables)
-    return GraphQLResponse.model_validate(result, from_attributes=True)
+    return GraphQLResponse.model_validate(result)
 
 
 @mcp.tool(
-    annotations={
-        "title": "Run Common GraphQL Query",
-        "readOnlyHint": True,
-        "openWorldHint": True
-    }
+    annotations={"title": "Run Common GraphQL Query", "readOnlyHint": True, "openWorldHint": True}
 )
-@serialize_pydantic
 def run_common_query(query_name: str, variables: dict[str, Any] | None = None) -> GraphQLResponse:
     """Run a pre-defined common GraphQL query.
 
@@ -293,21 +284,20 @@ def run_common_query(query_name: str, variables: dict[str, Any] | None = None) -
                 }
             ]
         }
-        return GraphQLResponse.model_validate(result, from_attributes=True)
+        return GraphQLResponse.model_validate(result)
 
     query = COMMON_QUERIES[query_name]
     result = _execute_graphql_internal(query, variables)
-    return GraphQLResponse.model_validate(result, from_attributes=True)
+    return GraphQLResponse.model_validate(result)
 
 
 @mcp.tool(
     annotations={
         "title": "GraphQL Query with Pagination",
         "readOnlyHint": True,
-        "openWorldHint": True
+        "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def graphql_paginate(
     query: str,
     variables: dict[str, Any] | None = None,
@@ -347,7 +337,7 @@ def graphql_paginate(
                     "pages_fetched": page_count,
                     "partial_results": all_results,
                 },
-                from_attributes=True
+                from_attributes=True,
             )
 
         all_results.append(result)
@@ -390,5 +380,5 @@ def graphql_paginate(
             "page_count": page_count,
             "complete": not has_next or page_count < max_pages,
         },
-        from_attributes=True
+        from_attributes=True,
     )

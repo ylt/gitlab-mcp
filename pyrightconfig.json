@@ -1,0 +1,5 @@
+{
+  "stubPath": "stubs",
+  "typeCheckingMode": "basic",
+  "reportMissingTypeStubs": false
+}

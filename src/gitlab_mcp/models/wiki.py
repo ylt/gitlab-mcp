@@ -80,3 +80,20 @@ class WikiPageDetail(BaseGitLabModel):
     def serialize_datetime(self, v: str | None) -> str | None:
         """Pass through already-formatted relative time."""
         return v
+
+
+class WikiPageDeleteResult(BaseGitLabModel):
+    """Result of deleting a wiki page."""
+
+    deleted: bool = Field(description="Whether the page was successfully deleted")
+    slug: str = Field(description="Slug of the deleted page")
+
+
+class WikiAttachmentResult(BaseGitLabModel):
+    """Result of uploading a wiki attachment."""
+
+    markdown: str = Field(description="Markdown link to the attachment")
+    url: str = Field(description="URL of the uploaded file")
+    alt: str = Field(description="Alt text for the attachment")
+    filename: str = Field(description="Name of the uploaded file")
+    size_bytes: int = Field(description="Size of the file in bytes")

@@ -1,13 +1,10 @@
 """Pipeline and job management tools."""
 
-from typing import cast
-from gitlab.v4.objects import ProjectPipeline, ProjectPipelineJob
 from gitlab_mcp.server import mcp
 from gitlab_mcp.client import get_project
-from gitlab_mcp.models.pipelines import PipelineSummary, JobSummary
+from gitlab_mcp.models.pipelines import PipelineSummary, JobSummary, JobLogResult
 from gitlab_mcp.utils.pagination import paginate
 from gitlab_mcp.utils.query import build_filters, build_sort
-from gitlab_mcp.utils.serialization import serialize_pydantic
 
 
 @mcp.tool(
@@ -17,7 +14,6 @@ from gitlab_mcp.utils.serialization import serialize_pydantic
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def list_pipelines(
     project_id: str,
     per_page: int = 20,
@@ -60,10 +56,7 @@ def list_pipelines(
         **filters,
     )
 
-    return [
-        PipelineSummary.model_validate(p, from_attributes=True)
-        for p in pipelines
-    ]
+    return [PipelineSummary.from_gitlab(p) for p in pipelines]
 
 
 @mcp.tool(
@@ -73,7 +66,6 @@ def list_pipelines(
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def get_pipeline(project_id: str, pipeline_id: int, include_stages: bool = True) -> PipelineSummary:
     """Get details of a pipeline with stages breakdown.
 
@@ -83,8 +75,8 @@ def get_pipeline(project_id: str, pipeline_id: int, include_stages: bool = True)
         include_stages: Include stages breakdown with status and job counts (default: True)
     """
     project = get_project(project_id)
-    pipeline = cast(ProjectPipeline, project.pipelines.get(pipeline_id))
-    return PipelineSummary.model_validate(pipeline, from_attributes=True)
+    pipeline = project.pipelines.get(pipeline_id)
+    return PipelineSummary.from_gitlab(pipeline)
 
 
 @mcp.tool(
@@ -96,7 +88,6 @@ def get_pipeline(project_id: str, pipeline_id: int, include_stages: bool = True)
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def create_pipeline(
     project_id: str,
     ref: str,
@@ -122,8 +113,8 @@ def create_pipeline(
     if description:
         payload["description"] = description
 
-    pipeline = cast(ProjectPipeline, project.pipelines.create(payload))
-    return PipelineSummary.model_validate(pipeline, from_attributes=True)
+    pipeline = project.pipelines.create(payload)
+    return PipelineSummary.from_gitlab(pipeline)
 
 
 @mcp.tool(
@@ -134,8 +125,7 @@ def create_pipeline(
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
-def retry_pipeline(project_id: str, pipeline_id: int) -> PipelineSummary | dict:
+def retry_pipeline(project_id: str, pipeline_id: int) -> PipelineSummary:
     """Retry a failed or canceled pipeline.
 
     Args:
@@ -145,21 +135,19 @@ def retry_pipeline(project_id: str, pipeline_id: int) -> PipelineSummary | dict:
     # Endpoint verified: POST /projects/:id/pipelines/:pipeline_id/retry
     # https://docs.gitlab.com/ee/api/pipelines.html
     project = get_project(project_id)
-    pipeline = cast(ProjectPipeline, project.pipelines.get(pipeline_id))
+    pipeline = project.pipelines.get(pipeline_id)
 
     # Check if pipeline already succeeded
     if pipeline.status == "success":
-        return {
-            "status": "skipped",
-            "message": "Pipeline already succeeded; no retry needed",
-            "pipeline_id": pipeline_id,
-            "current_status": pipeline.status,
-        }
+        raise ValueError(
+            f"Pipeline {pipeline_id} already succeeded; no retry needed. "
+            f"Current status: {pipeline.status}"
+        )
 
     pipeline.retry()
     # Refresh to get updated state
-    pipeline = cast(ProjectPipeline, project.pipelines.get(pipeline_id))
-    return PipelineSummary.model_validate(pipeline, from_attributes=True)
+    pipeline = project.pipelines.get(pipeline_id)
+    return PipelineSummary.from_gitlab(pipeline)
 
 
 @mcp.tool(
@@ -170,8 +158,7 @@ def retry_pipeline(project_id: str, pipeline_id: int) -> PipelineSummary | dict:
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
-def cancel_pipeline(project_id: str, pipeline_id: int) -> PipelineSummary | dict:
+def cancel_pipeline(project_id: str, pipeline_id: int) -> PipelineSummary:
     """Cancel a running pipeline.
 
     Args:
@@ -179,21 +166,18 @@ def cancel_pipeline(project_id: str, pipeline_id: int) -> PipelineSummary | dict
         pipeline_id: Pipeline ID to cancel
     """
     project = get_project(project_id)
-    pipeline = cast(ProjectPipeline, project.pipelines.get(pipeline_id))
+    pipeline = project.pipelines.get(pipeline_id)
 
     # Check if pipeline already completed
     if pipeline.status in ("success", "failed", "canceled", "skipped"):
-        return {
-            "status": "skipped",
-            "message": f"Pipeline already {pipeline.status}; cannot cancel",
-            "pipeline_id": pipeline_id,
-            "current_status": pipeline.status,
-        }
+        raise ValueError(
+            f"Pipeline {pipeline_id} already {pipeline.status}; cannot cancel"
+        )
 
     pipeline.cancel()
     # Refresh to get updated state
-    pipeline = cast(ProjectPipeline, project.pipelines.get(pipeline_id))
-    return PipelineSummary.model_validate(pipeline, from_attributes=True)
+    pipeline = project.pipelines.get(pipeline_id)
+    return PipelineSummary.from_gitlab(pipeline)
 
 
 @mcp.tool(
@@ -203,7 +187,6 @@ def cancel_pipeline(project_id: str, pipeline_id: int) -> PipelineSummary | dict
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def list_pipeline_jobs(
     project_id: str,
     pipeline_id: int,
@@ -219,7 +202,7 @@ def list_pipeline_jobs(
         status: Filter by job status (created, pending, running, success, failed, canceled, skipped, manual)
     """
     project = get_project(project_id)
-    pipeline = cast(ProjectPipeline, project.pipelines.get(pipeline_id))
+    pipeline = project.pipelines.get(pipeline_id)
 
     # Build filters
     filters = build_filters(status=status)
@@ -231,10 +214,7 @@ def list_pipeline_jobs(
         **filters,
     )
 
-    return [
-        JobSummary.model_validate(j, from_attributes=True)
-        for j in jobs
-    ]
+    return [JobSummary.from_gitlab(j) for j in jobs]
 
 
 @mcp.tool(
@@ -244,7 +224,6 @@ def list_pipeline_jobs(
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def get_pipeline_job(project_id: str, job_id: int) -> JobSummary:
     """Get details of a job with failure reason, artifacts, and retry count.
 
@@ -253,8 +232,8 @@ def get_pipeline_job(project_id: str, job_id: int) -> JobSummary:
         job_id: Job ID
     """
     project = get_project(project_id)
-    job = cast(ProjectPipelineJob, project.jobs.get(job_id))
-    return JobSummary.model_validate(job, from_attributes=True)
+    job = project.jobs.get(job_id)
+    return JobSummary.from_gitlab(job)
 
 
 @mcp.tool(
@@ -269,7 +248,7 @@ def get_job_log(
     job_id: int,
     max_lines: int = 1000,
     search: str | None = None,
-) -> dict:
+) -> JobLogResult:
     """Get the log/trace output of a job with optional filtering and truncation.
 
     Args:
@@ -284,7 +263,7 @@ def get_job_log(
         the request. Poll periodically for updates on in-progress jobs.
     """
     project = get_project(project_id)
-    job = cast(ProjectPipelineJob, project.jobs.get(job_id))
+    job = project.jobs.get(job_id)
 
     # Get full log
     raw_log = job.trace()
@@ -308,13 +287,13 @@ def get_job_log(
         shown_lines = lines
         log_output = "\n".join(shown_lines)
 
-    return {
+    return JobLogResult.model_validate({
         "job_id": job_id,
         "log": log_output,
         "truncated": truncated,
         "total_lines": total_lines,
         "shown_lines": len(shown_lines),
-    }
+    })
 
 
 @mcp.tool(
@@ -326,8 +305,7 @@ def get_job_log(
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
-def play_pipeline_job(project_id: str, job_id: int) -> JobSummary | dict:
+def play_pipeline_job(project_id: str, job_id: int) -> JobSummary:
     """Trigger a manual/skipped job to run.
 
     Args:
@@ -335,21 +313,18 @@ def play_pipeline_job(project_id: str, job_id: int) -> JobSummary | dict:
         job_id: Job ID to play/trigger
     """
     project = get_project(project_id)
-    job = cast(ProjectPipelineJob, project.jobs.get(job_id))
+    job = project.jobs.get(job_id)
 
     # Check if job is manual or skipped
     if job.status not in ("manual", "skipped"):
-        return {
-            "status": "skipped",
-            "message": f"Job is {job.status}; only manual or skipped jobs can be played",
-            "job_id": job_id,
-            "current_status": job.status,
-        }
+        raise ValueError(
+            f"Job {job_id} has status {job.status}; only manual or skipped jobs can be played"
+        )
 
     job.play()
     # Refresh to get updated state
-    job = cast(ProjectPipelineJob, project.jobs.get(job_id))
-    return JobSummary.model_validate(job, from_attributes=True)
+    job = project.jobs.get(job_id)
+    return JobSummary.from_gitlab(job)
 
 
 @mcp.tool(
@@ -360,8 +335,7 @@ def play_pipeline_job(project_id: str, job_id: int) -> JobSummary | dict:
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
-def retry_pipeline_job(project_id: str, job_id: int) -> JobSummary | dict:
+def retry_pipeline_job(project_id: str, job_id: int) -> JobSummary:
     """Retry a failed job.
 
     Args:
@@ -369,21 +343,18 @@ def retry_pipeline_job(project_id: str, job_id: int) -> JobSummary | dict:
         job_id: Job ID to retry
     """
     project = get_project(project_id)
-    job = cast(ProjectPipelineJob, project.jobs.get(job_id))
+    job = project.jobs.get(job_id)
 
     # Check if job failed
     if job.status != "failed":
-        return {
-            "status": "skipped",
-            "message": f"Job is {job.status}; only failed jobs can be retried",
-            "job_id": job_id,
-            "current_status": job.status,
-        }
+        raise ValueError(
+            f"Job {job_id} has status {job.status}; only failed jobs can be retried"
+        )
 
     job.retry()
     # Refresh to get updated state
-    job = cast(ProjectPipelineJob, project.jobs.get(job_id))
-    return JobSummary.model_validate(job, from_attributes=True)
+    job = project.jobs.get(job_id)
+    return JobSummary.from_gitlab(job)
 
 
 @mcp.tool(
@@ -394,8 +365,7 @@ def retry_pipeline_job(project_id: str, job_id: int) -> JobSummary | dict:
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
-def cancel_pipeline_job(project_id: str, job_id: int) -> JobSummary | dict:
+def cancel_pipeline_job(project_id: str, job_id: int) -> JobSummary:
     """Cancel a running job.
 
     Args:
@@ -403,21 +373,18 @@ def cancel_pipeline_job(project_id: str, job_id: int) -> JobSummary | dict:
         job_id: Job ID to cancel
     """
     project = get_project(project_id)
-    job = cast(ProjectPipelineJob, project.jobs.get(job_id))
+    job = project.jobs.get(job_id)
 
     # Check if job already completed
     if job.status in ("success", "failed", "canceled", "skipped"):
-        return {
-            "status": "skipped",
-            "message": f"Job already {job.status}; cannot cancel",
-            "job_id": job_id,
-            "current_status": job.status,
-        }
+        raise ValueError(
+            f"Job {job_id} already {job.status}; cannot cancel"
+        )
 
     job.cancel()
     # Refresh to get updated state
-    job = cast(ProjectPipelineJob, project.jobs.get(job_id))
-    return JobSummary.model_validate(job, from_attributes=True)
+    job = project.jobs.get(job_id)
+    return JobSummary.from_gitlab(job)
 
 
 @mcp.tool(
@@ -427,7 +394,6 @@ def cancel_pipeline_job(project_id: str, job_id: int) -> JobSummary | dict:
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def list_pipeline_trigger_jobs(
     project_id: str,
     pipeline_id: int,
@@ -443,7 +409,7 @@ def list_pipeline_trigger_jobs(
         status: Filter by job status (created, pending, running, success, failed, canceled, skipped, manual)
     """
     project = get_project(project_id)
-    pipeline = cast(ProjectPipeline, project.pipelines.get(pipeline_id))
+    pipeline = project.pipelines.get(pipeline_id)
 
     # Build filters
     filters = build_filters(status=status)
@@ -457,7 +423,4 @@ def list_pipeline_trigger_jobs(
 
     # Filter for jobs triggered by pipeline triggers (exclude manual/scheduled jobs)
     # Include all jobs in pipeline for now; can be filtered by status if needed
-    return [
-        JobSummary.model_validate(job, from_attributes=True)
-        for job in jobs
-    ]
+    return [JobSummary.from_gitlab(job) for job in jobs]

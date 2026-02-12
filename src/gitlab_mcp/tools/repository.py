@@ -1,21 +1,27 @@
 """Repository and file tools."""
 
 from typing import Any, cast
-from gitlab.v4.objects import ProjectFile, ProjectCommit, ProjectBranch
 from gitlab_mcp.server import mcp
 from gitlab_mcp.client import get_project, get_client
-from gitlab_mcp.models import FileSummary, FileContents, CommitSummary, BranchSummary
-from gitlab_mcp.utils.serialization import serialize_pydantic
-
-
-@mcp.tool(
-    annotations={
-        "title": "Get File",
-        "readOnlyHint": True,
-        "openWorldHint": True
-    }
+from gitlab_mcp.models import (
+    FileSummary,
+    FileContents,
+    CommitSummary,
+    BranchSummary,
+    FileOperationResult,
+    BranchDeleteResult,
+    CommitPushResult,
+    CommitDetails,
+    CommitDiffResult,
+    BranchDiffResult,
+    BranchComparison,
+    FileDeleteResult,
+    FileChange,
+    ComparisonCommit,
 )
-@serialize_pydantic
+
+
+@mcp.tool(annotations={"title": "Get File", "readOnlyHint": True, "openWorldHint": True})
 def get_file_contents(
     project_id: str,
     file_path: str,
@@ -29,25 +35,21 @@ def get_file_contents(
         ref: Branch, tag, or commit SHA (default: HEAD)
     """
     project = get_project(project_id)
-    f = cast(ProjectFile, project.files.get(file_path=file_path, ref=ref))
+    f = project.files.get(file_path=file_path, ref=ref)
     content = f.decode().decode("utf-8")
 
-    return FileContents.model_validate({
-        "path": file_path,
-        "content": content,
-        "size": len(content),
-        "last_commit": f.last_commit_id[:8],
-    }, from_attributes=True)
+    return FileContents.model_validate(
+        {
+            "path": file_path,
+            "content": content,
+            "size": len(content),
+            "last_commit": f.last_commit_id[:8],
+        },
+        from_attributes=True,
+    )
 
 
-@mcp.tool(
-    annotations={
-        "title": "List Files",
-        "readOnlyHint": True,
-        "openWorldHint": True
-    }
-)
-@serialize_pydantic
+@mcp.tool(annotations={"title": "List Files", "readOnlyHint": True, "openWorldHint": True})
 def list_directory(
     project_id: str,
     path: str = "",
@@ -63,8 +65,7 @@ def list_directory(
     project = get_project(project_id)
     items: Any = project.repository_tree(path=path, ref=ref)
     result: list[FileSummary] = [
-        FileSummary.model_validate(item, from_attributes=True)
-        for item in items
+        FileSummary.from_gitlab(item) for item in items
     ]
     return result
 
@@ -75,7 +76,7 @@ def list_directory(
         "readOnlyHint": False,
         "destructiveHint": False,
         "idempotentHint": True,
-        "openWorldHint": True
+        "openWorldHint": True,
     }
 )
 def create_or_update_file(
@@ -85,7 +86,7 @@ def create_or_update_file(
     commit_message: str,
     branch: str,
     create_branch: bool = False,
-) -> dict:
+) -> FileOperationResult:
     """Create or update a file in the repository.
 
     Args:
@@ -110,7 +111,7 @@ def create_or_update_file(
     # Get old content for diff calculation
     old_content = ""
     try:
-        f = cast(ProjectFile, project.files.get(file_path=file_path, ref=branch))
+        f = project.files.get(file_path=file_path, ref=branch)
         old_content = f.decode().decode("utf-8")
         f.content = content
         f.save(branch=branch, commit_message=commit_message)
@@ -133,25 +134,19 @@ def create_or_update_file(
     lines_added = len([line for line in new_lines if line not in old_lines])
     lines_removed = len([line for line in old_lines if line not in new_lines])
 
-    result: dict[str, Any] = {
-        "path": file_path,
-        "action": action,
-        "branch": branch,
-        "commit_message": commit_message,
-        "lines_added": lines_added,
-        "lines_removed": lines_removed,
-    }
-    return result
+    return FileOperationResult.model_validate(
+        {
+            "path": file_path,
+            "action": action,
+            "branch": branch,
+            "commit_message": commit_message,
+            "lines_added": lines_added,
+            "lines_removed": lines_removed,
+        }
+    )
 
 
-@mcp.tool(
-    annotations={
-        "title": "List Commits",
-        "readOnlyHint": True,
-        "openWorldHint": True
-    }
-)
-@serialize_pydantic
+@mcp.tool(annotations={"title": "List Commits", "readOnlyHint": True, "openWorldHint": True})
 def list_commits(
     project_id: str,
     ref: str = "HEAD",
@@ -176,10 +171,7 @@ def list_commits(
         kwargs["with_stats"] = True
     commits = project.commits.list(**kwargs)
 
-    return [
-        CommitSummary.model_validate(cast(ProjectCommit, c), from_attributes=True)
-        for c in commits
-    ]
+    return [CommitSummary.from_gitlab(c) for c in commits]
 
 
 @mcp.tool(
@@ -188,10 +180,9 @@ def list_commits(
         "readOnlyHint": False,
         "destructiveHint": False,
         "idempotentHint": False,
-        "openWorldHint": True
+        "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def create_branch(
     project_id: str,
     branch_name: str,
@@ -205,8 +196,8 @@ def create_branch(
         ref: Source branch, tag, or commit SHA
     """
     project = get_project(project_id)
-    branch = cast(ProjectBranch, project.branches.create({"branch": branch_name, "ref": ref}))
-    return BranchSummary.model_validate(branch, from_attributes=True)
+    branch = project.branches.create({"branch": branch_name, "ref": ref})
+    return BranchSummary.from_gitlab(branch)
 
 
 @mcp.tool(
@@ -215,13 +206,13 @@ def create_branch(
         "readOnlyHint": False,
         "destructiveHint": True,
         "idempotentHint": True,
-        "openWorldHint": True
+        "openWorldHint": True,
     }
 )
 def delete_branch(
     project_id: str,
     branch_name: str,
-) -> dict:
+) -> BranchDeleteResult:
     """Delete a branch from the repository.
 
     Args:
@@ -231,32 +222,28 @@ def delete_branch(
     Note: Cannot delete protected branches without unprotecting first.
     """
     project = get_project(project_id)
-    branch = cast(ProjectBranch, project.branches.get(branch_name))
+    branch = project.branches.get(branch_name)
 
     if branch.protected:
-        error_result: dict[str, Any] = {
-            "deleted": False,
-            "error": "Cannot delete protected branch",
-            "branch": branch_name,
-            "protected": True,
-        }
-        return error_result
+        return BranchDeleteResult.model_validate(
+            {
+                "deleted": False,
+                "branch": branch_name,
+                "error": "Cannot delete protected branch",
+                "protected": True,
+            }
+        )
 
     project.branches.delete(branch_name)
-    success_result: dict[str, Any] = {
-        "deleted": True,
-        "branch": branch_name,
-    }
-    return success_result
+    return BranchDeleteResult.model_validate(
+        {
+            "deleted": True,
+            "branch": branch_name,
+        }
+    )
 
 
-@mcp.tool(
-    annotations={
-        "title": "Search Repositories",
-        "readOnlyHint": True,
-        "openWorldHint": True
-    }
-)
+@mcp.tool(annotations={"title": "Search Repositories", "readOnlyHint": True, "openWorldHint": True})
 def search_repositories(
     query: str,
     limit: int = 10,
@@ -282,14 +269,7 @@ def search_repositories(
     ]
 
 
-@mcp.tool(
-    annotations={
-        "title": "Get Repository Tree",
-        "readOnlyHint": True,
-        "openWorldHint": True
-    }
-)
-@serialize_pydantic
+@mcp.tool(annotations={"title": "Get Repository Tree", "readOnlyHint": True, "openWorldHint": True})
 def get_repository_tree(
     project_id: str,
     path: str = "",
@@ -306,10 +286,7 @@ def get_repository_tree(
     """
     project = get_project(project_id)
     items = project.repository_tree(path=path, ref=ref, recursive=recursive)
-    return [
-        FileSummary.model_validate(item, from_attributes=True)
-        for item in items
-    ]
+    return [FileSummary.from_gitlab(item) for item in items]
 
 
 @mcp.tool(
@@ -318,7 +295,7 @@ def get_repository_tree(
         "readOnlyHint": False,
         "destructiveHint": False,
         "idempotentHint": False,
-        "openWorldHint": True
+        "openWorldHint": True,
     }
 )
 def push_files(
@@ -326,7 +303,7 @@ def push_files(
     branch: str,
     commit_message: str,
     files: list[dict],
-) -> dict:
+) -> CommitPushResult:
     """Commit multiple files in a single commit.
 
     Args:
@@ -360,25 +337,21 @@ def push_files(
         }
     )
 
-    return {
-        "commit_sha": commit.id[:8],
-        "branch": branch,
-        "message": commit.message,
-        "files_changed": len(files),
-    }
+    return CommitPushResult.model_validate(
+        {
+            "commit_sha": commit.id[:8],
+            "branch": branch,
+            "message": commit.message,
+            "files_changed": len(files),
+        }
+    )
 
 
-@mcp.tool(
-    annotations={
-        "title": "Get Commit",
-        "readOnlyHint": True,
-        "openWorldHint": True
-    }
-)
+@mcp.tool(annotations={"title": "Get Commit", "readOnlyHint": True, "openWorldHint": True})
 def get_commit(
     project_id: str,
     sha: str,
-) -> dict:
+) -> CommitDetails:
     """Get details of a specific commit.
 
     Args:
@@ -386,32 +359,28 @@ def get_commit(
         sha: Commit SHA (full or short)
     """
     project = get_project(project_id)
-    commit = cast(ProjectCommit, project.commits.get(sha))
+    commit = project.commits.get(sha)
 
-    return {
-        "sha": commit.id[:8],
-        "full_sha": commit.id,
-        "message": commit.message,
-        "title": commit.title,
-        "author": commit.author_name,
-        "email": commit.author_email,
-        "created": commit.created_at,
-        "web_url": commit.web_url,
-        "parent_ids": [p[:8] for p in commit.parent_ids],
-    }
+    return CommitDetails.model_validate(
+        {
+            "sha": commit.id[:8],
+            "full_sha": commit.id,
+            "message": commit.message,
+            "title": commit.title,
+            "author": commit.author_name,
+            "email": commit.author_email,
+            "created": commit.created_at,
+            "web_url": commit.web_url,
+            "parent_ids": [p[:8] for p in commit.parent_ids],
+        }
+    )
 
 
-@mcp.tool(
-    annotations={
-        "title": "Get Commit Diff",
-        "readOnlyHint": True,
-        "openWorldHint": True
-    }
-)
+@mcp.tool(annotations={"title": "Get Commit Diff", "readOnlyHint": True, "openWorldHint": True})
 def get_commit_diff(
     project_id: str,
     sha: str,
-) -> dict:
+) -> CommitDiffResult:
     """Get the changes in a specific commit.
 
     Args:
@@ -419,41 +388,39 @@ def get_commit_diff(
         sha: Commit SHA (full or short)
     """
     project = get_project(project_id)
-    commit = cast(ProjectCommit, project.commits.get(sha, lazy=True))
+    commit = project.commits.get(sha, lazy=True)
     diff = commit.diff()
 
     files_changed = []
     for change in diff:
         files_changed.append(
-            {
-                "path": change["new_path"] or change["old_path"],
-                "status": change["new_file"]
-                and "new"
-                or (change["deleted_file"] and "deleted" or "modified"),
-                "additions": change.get("additions", 0),
-                "deletions": change.get("deletions", 0),
-            }
+            FileChange.model_validate(
+                {
+                    "path": change["new_path"] or change["old_path"],
+                    "status": change["new_file"]
+                    and "new"
+                    or (change["deleted_file"] and "deleted" or "modified"),
+                    "additions": change.get("additions", 0),
+                    "deletions": change.get("deletions", 0),
+                }
+            )
         )
 
-    return {
-        "commit_sha": sha[:8],
-        "files_changed": files_changed,
-        "total_files": len(files_changed),
-    }
+    return CommitDiffResult.model_validate(
+        {
+            "commit_sha": sha[:8],
+            "files_changed": files_changed,
+            "total_files": len(files_changed),
+        }
+    )
 
 
-@mcp.tool(
-    annotations={
-        "title": "Get Branch Diffs",
-        "readOnlyHint": True,
-        "openWorldHint": True
-    }
-)
+@mcp.tool(annotations={"title": "Get Branch Diffs", "readOnlyHint": True, "openWorldHint": True})
 def get_branch_diffs(
     project_id: str,
     from_ref: str,
     to_ref: str,
-) -> dict:
+) -> BranchDiffResult:
     """Compare two branches and get the differences.
 
     Args:
@@ -468,38 +435,36 @@ def get_branch_diffs(
     files_changed = []
     for change in comparison_dict["diffs"]:
         files_changed.append(
-            {
-                "path": change["new_path"] or change["old_path"],
-                "status": change["new_file"]
-                and "new"
-                or (change["deleted_file"] and "deleted" or "modified"),
-                "additions": change.get("additions", 0),
-                "deletions": change.get("deletions", 0),
-            }
+            FileChange.model_validate(
+                {
+                    "path": change["new_path"] or change["old_path"],
+                    "status": change["new_file"]
+                    and "new"
+                    or (change["deleted_file"] and "deleted" or "modified"),
+                    "additions": change.get("additions", 0),
+                    "deletions": change.get("deletions", 0),
+                }
+            )
         )
 
-    return {
-        "from_ref": from_ref,
-        "to_ref": to_ref,
-        "commits": len(comparison_dict["commits"]),
-        "files_changed": files_changed,
-        "total_files": len(files_changed),
-    }
+    return BranchDiffResult.model_validate(
+        {
+            "from_ref": from_ref,
+            "to_ref": to_ref,
+            "commits": len(comparison_dict["commits"]),
+            "files_changed": files_changed,
+            "total_files": len(files_changed),
+        }
+    )
 
 
-@mcp.tool(
-    annotations={
-        "title": "Compare Branches",
-        "readOnlyHint": True,
-        "openWorldHint": True
-    }
-)
+@mcp.tool(annotations={"title": "Compare Branches", "readOnlyHint": True, "openWorldHint": True})
 def compare_branches(
     project_id: str,
     from_ref: str,
     to_ref: str,
     straight: bool = False,
-) -> dict:
+) -> BranchComparison:
     """Compare two branches, tags, or commits.
 
     Args:
@@ -513,40 +478,42 @@ def compare_branches(
     comparison_dict = cast(dict, comparison)
 
     commits = [
-        {
-            "sha": c["id"][:8],
-            "message": c["title"],
-            "author": c["author_name"],
-            "created": c["created_at"],
-        }
+        ComparisonCommit.model_validate(
+            {
+                "sha": c["id"][:8],
+                "message": c["title"],
+                "author": c["author_name"],
+                "created": c["created_at"],
+            }
+        )
         for c in comparison_dict["commits"]
     ]
 
     diffs = [
-        {
-            "path": d["new_path"] or d["old_path"],
-            "status": d["new_file"] and "new" or (d["deleted_file"] and "deleted" or "modified"),
-        }
+        FileChange.model_validate(
+            {
+                "path": d["new_path"] or d["old_path"],
+                "status": d["new_file"] and "new" or (d["deleted_file"] and "deleted" or "modified"),
+                "additions": 0,  # Not available in comparison
+                "deletions": 0,  # Not available in comparison
+            }
+        )
         for d in comparison_dict["diffs"]
     ]
 
-    return {
-        "from_ref": from_ref,
-        "to_ref": to_ref,
-        "commits": commits,
-        "diffs": diffs,
-        "compare_timeout": comparison_dict.get("compare_timeout", False),
-        "compare_same_ref": comparison_dict.get("compare_same_ref", False),
-    }
+    return BranchComparison.model_validate(
+        {
+            "from_ref": from_ref,
+            "to_ref": to_ref,
+            "commits": commits,
+            "diffs": diffs,
+            "compare_timeout": comparison_dict.get("compare_timeout", False),
+            "compare_same_ref": comparison_dict.get("compare_same_ref", False),
+        }
+    )
 
 
-@mcp.tool(
-    annotations={
-        "title": "Get File Blame",
-        "readOnlyHint": True,
-        "openWorldHint": True
-    }
-)
+@mcp.tool(annotations={"title": "Get File Blame", "readOnlyHint": True, "openWorldHint": True})
 def get_blame(
     project_id: str,
     file_path: str,
@@ -576,13 +543,7 @@ def get_blame(
     ]
 
 
-@mcp.tool(
-    annotations={
-        "title": "Get Contributors",
-        "readOnlyHint": True,
-        "openWorldHint": True
-    }
-)
+@mcp.tool(annotations={"title": "Get Contributors", "readOnlyHint": True, "openWorldHint": True})
 def get_contributors(
     project_id: str,
     order_by: str | None = None,
@@ -617,7 +578,7 @@ def get_contributors(
         "readOnlyHint": False,
         "destructiveHint": True,
         "idempotentHint": False,
-        "openWorldHint": True
+        "openWorldHint": True,
     }
 )
 def delete_file(
@@ -625,7 +586,7 @@ def delete_file(
     file_path: str,
     commit_message: str,
     branch: str,
-) -> dict:
+) -> FileDeleteResult:
     """Delete a file from the repository.
 
     Args:
@@ -636,8 +597,10 @@ def delete_file(
     """
     project = get_project(project_id)
     project.files.delete(file_path=file_path, branch=branch, commit_message=commit_message)
-    return {
-        "deleted": True,
-        "path": file_path,
-        "branch": branch,
-    }
+    return FileDeleteResult.model_validate(
+        {
+            "deleted": True,
+            "path": file_path,
+            "branch": branch,
+        }
+    )

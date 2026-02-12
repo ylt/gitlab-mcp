@@ -1,23 +1,14 @@
 """Wiki tools."""
 
 from typing import Any, cast
-from gitlab.v4.objects import ProjectWiki
 from gitlab_mcp.server import mcp
 from gitlab_mcp.client import get_project
-from gitlab_mcp.models import WikiPageSummary, WikiPageDetail
+from gitlab_mcp.models import WikiPageSummary, WikiPageDetail, WikiPageDeleteResult, WikiAttachmentResult
 from gitlab_mcp.utils.pagination import paginate
-from gitlab_mcp.utils.serialization import serialize_pydantic
 import os
 
 
-@mcp.tool(
-    annotations={
-        "title": "List Wiki Pages",
-        "readOnlyHint": True,
-        "openWorldHint": True
-    }
-)
-@serialize_pydantic
+@mcp.tool(annotations={"title": "List Wiki Pages", "readOnlyHint": True, "openWorldHint": True})
 def list_wiki_pages(
     project_id: str,
     per_page: int = 20,
@@ -33,17 +24,10 @@ def list_wiki_pages(
         project.wikis,
         per_page=per_page,
     )
-    return [WikiPageSummary.model_validate(p, from_attributes=True) for p in pages]
+    return [WikiPageSummary.from_gitlab(p) for p in pages]
 
 
-@mcp.tool(
-    annotations={
-        "title": "Get Wiki Page",
-        "readOnlyHint": True,
-        "openWorldHint": True
-    }
-)
-@serialize_pydantic
+@mcp.tool(annotations={"title": "Get Wiki Page", "readOnlyHint": True, "openWorldHint": True})
 def get_wiki_page(project_id: str, slug: str) -> WikiPageDetail:
     """Get the content of a wiki page.
 
@@ -52,8 +36,8 @@ def get_wiki_page(project_id: str, slug: str) -> WikiPageDetail:
         slug: Wiki page slug (e.g., "home", "my-page")
     """
     project = get_project(project_id)
-    page = cast(ProjectWiki, project.wikis.get(slug))
-    return WikiPageDetail.model_validate(page, from_attributes=True)
+    page = project.wikis.get(slug)
+    return WikiPageDetail.from_gitlab(page)
 
 
 @mcp.tool(
@@ -62,10 +46,9 @@ def get_wiki_page(project_id: str, slug: str) -> WikiPageDetail:
         "readOnlyHint": False,
         "destructiveHint": False,
         "idempotentHint": False,
-        "openWorldHint": True
+        "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def create_wiki_page(
     project_id: str,
     title: str,
@@ -90,7 +73,7 @@ def create_wiki_page(
         "format": format,
     }
     page = project.wikis.create(data)
-    return WikiPageDetail.model_validate(page, from_attributes=True)
+    return WikiPageDetail.from_gitlab(page)
 
 
 @mcp.tool(
@@ -99,10 +82,9 @@ def create_wiki_page(
         "readOnlyHint": False,
         "destructiveHint": False,
         "idempotentHint": True,
-        "openWorldHint": True
+        "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def update_wiki_page(
     project_id: str,
     slug: str,
@@ -121,13 +103,13 @@ def update_wiki_page(
         Updated wiki page
     """
     project = get_project(project_id)
-    page = cast(ProjectWiki, project.wikis.get(slug))
+    page = project.wikis.get(slug)
     if title:
         page.title = title
     if content:
         page.content = content
     page.save()
-    return WikiPageDetail.model_validate(page, from_attributes=True)
+    return WikiPageDetail.from_gitlab(page)
 
 
 @mcp.tool(
@@ -136,10 +118,10 @@ def update_wiki_page(
         "readOnlyHint": False,
         "destructiveHint": True,
         "idempotentHint": True,
-        "openWorldHint": True
+        "openWorldHint": True,
     }
 )
-def delete_wiki_page(project_id: str, slug: str) -> dict[str, bool | str]:
+def delete_wiki_page(project_id: str, slug: str) -> WikiPageDeleteResult:
     """Delete a wiki page.
 
     Note: This action is permanent and cannot be undone.
@@ -153,20 +135,10 @@ def delete_wiki_page(project_id: str, slug: str) -> dict[str, bool | str]:
     """
     project = get_project(project_id)
     project.wikis.delete(slug)
-    return {
-        "deleted": True,
-        "slug": slug,
-    }
+    return WikiPageDeleteResult.model_validate({"deleted": True, "slug": slug})
 
 
-@mcp.tool(
-    annotations={
-        "title": "Search Wiki Pages",
-        "readOnlyHint": True,
-        "openWorldHint": True
-    }
-)
-@serialize_pydantic
+@mcp.tool(annotations={"title": "Search Wiki Pages", "readOnlyHint": True, "openWorldHint": True})
 def search_wiki_pages(project_id: str, query: str) -> list[WikiPageSummary]:
     """Search wiki pages by title or content.
 
@@ -190,17 +162,17 @@ def search_wiki_pages(project_id: str, query: str) -> list[WikiPageSummary]:
         for page in pages:
             # Check title match
             if query_lower in page.title.lower():
-                results.append(WikiPageSummary.model_validate(page, from_attributes=True))
+                results.append(WikiPageSummary.from_gitlab(page))
             # Check content match (requires fetching full page)
             else:
-                full_page = cast(ProjectWiki, project.wikis.get(page.slug))
+                full_page = project.wikis.get(page.slug)
                 if query_lower in full_page.content.lower():
-                    results.append(WikiPageSummary.model_validate(page, from_attributes=True))
+                    results.append(WikiPageSummary.from_gitlab(page))
     except Exception:
         # If pagination fails, try direct list
         for page in project.wikis.list(all=True):
             if query_lower in page.title.lower():
-                results.append(WikiPageSummary.model_validate(page, from_attributes=True))
+                results.append(WikiPageSummary.from_gitlab(page))
 
     return results
 
@@ -211,14 +183,14 @@ def search_wiki_pages(project_id: str, query: str) -> list[WikiPageSummary]:
         "readOnlyHint": False,
         "destructiveHint": False,
         "idempotentHint": False,
-        "openWorldHint": True
+        "openWorldHint": True,
     }
 )
 def upload_wiki_attachment(
     project_id: str,
     file_path: str,
     file_name: str | None = None,
-) -> dict[str, str | int]:
+) -> WikiAttachmentResult:
     """Upload a file as a wiki attachment.
 
     Uploads a file to the project and returns the markdown link
@@ -248,13 +220,13 @@ def upload_wiki_attachment(
     # Use project uploads API
     result: Any = project.uploads.create({"file": (filename, file_contents)})  # type: ignore[reportUnknownVariableType,reportUnknownMemberType]
 
-    return {
+    return WikiAttachmentResult.model_validate({
         "markdown": cast(str, result.markdown),
         "url": cast(str, result.url),
         "alt": cast(str, result.alt),
         "filename": filename,
         "size_bytes": len(file_contents),
-    }
+    })
 
 
 # Note: Wiki page revision history and revert functionality are not supported via

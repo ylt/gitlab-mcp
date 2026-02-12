@@ -1,16 +1,11 @@
 """Label tools."""
 
-from typing import cast
-
-from gitlab.v4.objects import ProjectLabel
-
 from gitlab_mcp.server import mcp
 from gitlab_mcp.client import get_project
-from gitlab_mcp.models import LabelSummary
+from gitlab_mcp.models import LabelSummary, LabelDeleteResult, LabelSubscriptionResult
 from gitlab_mcp.utils.pagination import paginate
 from gitlab_mcp.utils.query import build_filters
 from gitlab_mcp.utils.validation import validate_color
-from gitlab_mcp.utils.serialization import serialize_pydantic
 
 
 @mcp.tool(
@@ -20,7 +15,6 @@ from gitlab_mcp.utils.serialization import serialize_pydantic
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def list_labels(
     project_id: str,
     per_page: int = 20,
@@ -40,7 +34,7 @@ def list_labels(
         per_page=per_page,
         **filters,
     )
-    return [LabelSummary.model_validate(label, from_attributes=True) for label in labels]
+    return [LabelSummary.from_gitlab(label) for label in labels]
 
 
 @mcp.tool(
@@ -50,7 +44,6 @@ def list_labels(
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def get_label(project_id: str, label_id: int) -> LabelSummary:
     """Get details of a specific label.
 
@@ -59,8 +52,8 @@ def get_label(project_id: str, label_id: int) -> LabelSummary:
         label_id: Label ID
     """
     project = get_project(project_id)
-    label = cast(ProjectLabel, project.labels.get(label_id))
-    return LabelSummary.model_validate(label, from_attributes=True)
+    label = project.labels.get(label_id)
+    return LabelSummary.from_gitlab(label)
 
 
 @mcp.tool(
@@ -72,7 +65,6 @@ def get_label(project_id: str, label_id: int) -> LabelSummary:
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def create_label(
     project_id: str,
     name: str,
@@ -97,7 +89,7 @@ def create_label(
     if priority is not None:
         data["priority"] = priority
     label = project.labels.create(data)
-    return LabelSummary.model_validate(label, from_attributes=True)
+    return LabelSummary.from_gitlab(label)
 
 
 @mcp.tool(
@@ -109,7 +101,6 @@ def create_label(
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def update_label(
     project_id: str,
     label_id: int,
@@ -127,7 +118,7 @@ def update_label(
         description: New description (leave empty to keep current)
     """
     project = get_project(project_id)
-    label = cast(ProjectLabel, project.labels.get(label_id))
+    label = project.labels.get(label_id)
     data = {}
     if name:
         data["name"] = name
@@ -138,7 +129,7 @@ def update_label(
         data["description"] = description
     if data:
         label.update(data)
-    return LabelSummary.model_validate(label, from_attributes=True)
+    return LabelSummary.from_gitlab(label)
 
 
 @mcp.tool(
@@ -150,7 +141,7 @@ def update_label(
         "openWorldHint": True,
     }
 )
-def delete_label(project_id: str, label_id: int) -> dict:
+def delete_label(project_id: str, label_id: int) -> LabelDeleteResult:
     """Delete a label.
 
     Note: The label will be removed from all issues and MRs that use it.
@@ -161,7 +152,7 @@ def delete_label(project_id: str, label_id: int) -> dict:
     """
     project = get_project(project_id)
     project.labels.delete(label_id)
-    return {"id": label_id, "deleted": True}
+    return LabelDeleteResult.model_validate({"id": label_id, "deleted": True})
 
 
 @mcp.tool(
@@ -173,7 +164,6 @@ def delete_label(project_id: str, label_id: int) -> dict:
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def promote_label_to_group(project_id: str, label_name: str) -> LabelSummary:
     """Promote a project label to a group label.
 
@@ -192,7 +182,7 @@ def promote_label_to_group(project_id: str, label_name: str) -> LabelSummary:
 
     # Promote to group
     promoted = label.promote()
-    return LabelSummary.model_validate(promoted, from_attributes=True)
+    return LabelSummary.from_gitlab(promoted)
 
 
 @mcp.tool(
@@ -204,7 +194,7 @@ def promote_label_to_group(project_id: str, label_name: str) -> LabelSummary:
         "openWorldHint": True,
     }
 )
-def subscribe_to_label(project_id: str, label_name: str) -> dict:
+def subscribe_to_label(project_id: str, label_name: str) -> LabelSubscriptionResult:
     """Subscribe to notifications for a label.
 
     Args:
@@ -220,11 +210,11 @@ def subscribe_to_label(project_id: str, label_name: str) -> dict:
 
     # Subscribe
     label.subscribe()
-    return {
+    return LabelSubscriptionResult.model_validate({
         "name": label.name,
         "subscribed": True,
         "message": f"Subscribed to notifications for label '{label.name}'",
-    }
+    })
 
 
 @mcp.tool(
@@ -236,7 +226,7 @@ def subscribe_to_label(project_id: str, label_name: str) -> dict:
         "openWorldHint": True,
     }
 )
-def unsubscribe_from_label(project_id: str, label_name: str) -> dict:
+def unsubscribe_from_label(project_id: str, label_name: str) -> LabelSubscriptionResult:
     """Unsubscribe from notifications for a label.
 
     Args:
@@ -252,8 +242,8 @@ def unsubscribe_from_label(project_id: str, label_name: str) -> dict:
 
     # Unsubscribe
     label.unsubscribe()
-    return {
+    return LabelSubscriptionResult.model_validate({
         "name": label.name,
         "subscribed": False,
         "message": f"Unsubscribed from notifications for label '{label.name}'",
-    }
+    })

@@ -1,27 +1,22 @@
 """Discussion and note tools for merge requests and issues."""
 
 import logging
-from typing import Any, cast
+from typing import Any
 
-from gitlab.v4.objects import (
-    ProjectMergeRequest,
-    ProjectIssue,
-    ProjectMergeRequestDiscussion,
-    ProjectMergeRequestNote,
-    ProjectIssueNote,
-    ProjectMergeRequestDiscussionNote,
-)
 from gitlab_mcp.server import mcp
 from gitlab_mcp.client import get_project
-from gitlab_mcp.models import DiscussionSummary, NoteSummary
+from gitlab_mcp.models import (
+    DiscussionSummary,
+    NoteSummary,
+    NoteDeleteResult,
+    DiscussionNoteDeleteResult,
+)
 from gitlab_mcp.utils.pagination import paginate
-from gitlab_mcp.utils.serialization import serialize_pydantic
 
 logger = logging.getLogger(__name__)
 
 
 @mcp.tool(annotations={"title": "MR Discussions", "readOnlyHint": True, "openWorldHint": True})
-@serialize_pydantic
 def mr_discussions(
     project_id: str,
     mr_iid: int,
@@ -35,13 +30,12 @@ def mr_discussions(
         per_page: Items per page (default 20, max 100)
     """
     project = get_project(project_id)
-    mr = cast(ProjectMergeRequest, project.mergerequests.get(mr_iid))
+    mr = project.mergerequests.get(mr_iid)
     discussions = paginate(mr.discussions, per_page=per_page)
-    return [DiscussionSummary.model_validate(d, from_attributes=True) for d in discussions]
+    return [DiscussionSummary.from_gitlab(d) for d in discussions]
 
 
 @mcp.tool(annotations={"title": "Issue Discussions", "readOnlyHint": True, "openWorldHint": True})
-@serialize_pydantic
 def list_issue_discussions(
     project_id: str,
     issue_iid: int,
@@ -55,9 +49,9 @@ def list_issue_discussions(
         per_page: Items per page (default 20, max 100)
     """
     project = get_project(project_id)
-    issue = cast(ProjectIssue, project.issues.get(issue_iid))
+    issue = project.issues.get(issue_iid)
     discussions = paginate(issue.discussions, per_page=per_page)
-    return [DiscussionSummary.model_validate(d, from_attributes=True) for d in discussions]
+    return [DiscussionSummary.from_gitlab(d) for d in discussions]
 
 
 @mcp.tool(
@@ -69,7 +63,6 @@ def list_issue_discussions(
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def create_merge_request_thread(
     project_id: str,
     mr_iid: int,
@@ -92,14 +85,14 @@ def create_merge_request_thread(
             - new_line: line number in head version
     """
     project = get_project(project_id)
-    mr = cast(ProjectMergeRequest, project.mergerequests.get(mr_iid))
+    mr = project.mergerequests.get(mr_iid)
 
     data: dict[str, Any] = {"body": body}
     if position:
         data["position"] = position
 
     discussion = mr.discussions.create(data)
-    return DiscussionSummary.model_validate(discussion, from_attributes=True)
+    return DiscussionSummary.from_gitlab(discussion)
 
 
 @mcp.tool(
@@ -111,7 +104,6 @@ def create_merge_request_thread(
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def resolve_merge_request_thread(
     project_id: str,
     mr_iid: int,
@@ -127,15 +119,15 @@ def resolve_merge_request_thread(
         resolved: True to resolve, False to unresolve
     """
     project = get_project(project_id)
-    mr = cast(ProjectMergeRequest, project.mergerequests.get(mr_iid))
-    discussion = cast(ProjectMergeRequestDiscussion, mr.discussions.get(discussion_id))
+    mr = project.mergerequests.get(mr_iid)
+    discussion = mr.discussions.get(discussion_id)
 
     discussion.resolved = resolved
     discussion.save()
 
     # Refresh to get updated details
-    discussion = cast(ProjectMergeRequestDiscussion, mr.discussions.get(discussion_id))
-    return DiscussionSummary.model_validate(discussion, from_attributes=True)
+    discussion = mr.discussions.get(discussion_id)
+    return DiscussionSummary.from_gitlab(discussion)
 
 
 @mcp.tool(
@@ -147,7 +139,6 @@ def resolve_merge_request_thread(
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def create_merge_request_note(
     project_id: str,
     mr_iid: int,
@@ -161,9 +152,9 @@ def create_merge_request_note(
         body: Comment text (markdown supported)
     """
     project = get_project(project_id)
-    mr = cast(ProjectMergeRequest, project.mergerequests.get(mr_iid))
+    mr = project.mergerequests.get(mr_iid)
     note = mr.notes.create({"body": body})
-    return NoteSummary.model_validate(note, from_attributes=True)
+    return NoteSummary.from_gitlab(note)
 
 
 @mcp.tool(
@@ -175,7 +166,6 @@ def create_merge_request_note(
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def update_merge_request_note(
     project_id: str,
     mr_iid: int,
@@ -191,12 +181,12 @@ def update_merge_request_note(
         body: Updated comment text (markdown supported)
     """
     project = get_project(project_id)
-    mr = cast(ProjectMergeRequest, project.mergerequests.get(mr_iid))
-    note = cast(ProjectMergeRequestNote, mr.notes.get(note_id, lazy=True))
+    mr = project.mergerequests.get(mr_iid)
+    note = mr.notes.get(note_id, lazy=True)
 
     note.body = body
     note.save()
-    return NoteSummary.model_validate(note, from_attributes=True)
+    return NoteSummary.from_gitlab(note)
 
 
 @mcp.tool(
@@ -212,7 +202,7 @@ def delete_merge_request_note(
     project_id: str,
     mr_iid: int,
     note_id: int,
-) -> dict:
+) -> NoteDeleteResult:
     """Delete a comment/note from a merge request.
 
     Args:
@@ -221,17 +211,16 @@ def delete_merge_request_note(
         note_id: Note ID to delete
     """
     project = get_project(project_id)
-    mr = cast(ProjectMergeRequest, project.mergerequests.get(mr_iid))
+    mr = project.mergerequests.get(mr_iid)
 
     logger.warning(f"Deleting note {note_id} from merge request !{mr_iid} in project {project_id}")
     mr.notes.delete(note_id)
 
-    return_data: dict[str, Any] = {
+    return NoteDeleteResult.model_validate({
         "deleted": True,
         "note_id": note_id,
         "merge_request_iid": mr_iid,
-    }
-    return return_data
+    })
 
 
 @mcp.tool(
@@ -243,7 +232,6 @@ def delete_merge_request_note(
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def create_issue_note(
     project_id: str,
     issue_iid: int,
@@ -257,9 +245,9 @@ def create_issue_note(
         body: Comment text (markdown supported)
     """
     project = get_project(project_id)
-    issue = cast(ProjectIssue, project.issues.get(issue_iid))
+    issue = project.issues.get(issue_iid)
     note = issue.notes.create({"body": body})
-    return NoteSummary.model_validate(note, from_attributes=True)
+    return NoteSummary.from_gitlab(note)
 
 
 @mcp.tool(
@@ -271,7 +259,6 @@ def create_issue_note(
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def update_issue_note(
     project_id: str,
     issue_iid: int,
@@ -287,12 +274,12 @@ def update_issue_note(
         body: Updated comment text (markdown supported)
     """
     project = get_project(project_id)
-    issue = cast(ProjectIssue, project.issues.get(issue_iid))
-    note = cast(ProjectIssueNote, issue.notes.get(note_id, lazy=True))
+    issue = project.issues.get(issue_iid)
+    note = issue.notes.get(note_id, lazy=True)
 
     note.body = body
     note.save()
-    return NoteSummary.model_validate(note, from_attributes=True)
+    return NoteSummary.from_gitlab(note)
 
 
 @mcp.tool(
@@ -304,7 +291,6 @@ def update_issue_note(
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def create_merge_request_discussion_note(
     project_id: str,
     mr_iid: int,
@@ -320,10 +306,10 @@ def create_merge_request_discussion_note(
         body: Reply text (markdown supported)
     """
     project = get_project(project_id)
-    mr = cast(ProjectMergeRequest, project.mergerequests.get(mr_iid))
-    discussion = cast(ProjectMergeRequestDiscussion, mr.discussions.get(discussion_id, lazy=True))
+    mr = project.mergerequests.get(mr_iid)
+    discussion = mr.discussions.get(discussion_id, lazy=True)
     note = discussion.notes.create({"body": body})
-    return NoteSummary.model_validate(note, from_attributes=True)
+    return NoteSummary.from_gitlab(note)
 
 
 @mcp.tool(
@@ -335,7 +321,6 @@ def create_merge_request_discussion_note(
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def update_merge_request_discussion_note(
     project_id: str,
     mr_iid: int,
@@ -353,13 +338,13 @@ def update_merge_request_discussion_note(
         body: Updated reply text (markdown supported)
     """
     project = get_project(project_id)
-    mr = cast(ProjectMergeRequest, project.mergerequests.get(mr_iid))
-    discussion = cast(ProjectMergeRequestDiscussion, mr.discussions.get(discussion_id, lazy=True))
-    note = cast(ProjectMergeRequestDiscussionNote, discussion.notes.get(note_id, lazy=True))
+    mr = project.mergerequests.get(mr_iid)
+    discussion = mr.discussions.get(discussion_id, lazy=True)
+    note = discussion.notes.get(note_id, lazy=True)
 
     note.body = body
     note.save()
-    return NoteSummary.model_validate(note, from_attributes=True)
+    return NoteSummary.from_gitlab(note)
 
 
 @mcp.tool(
@@ -376,7 +361,7 @@ def delete_merge_request_discussion_note(
     mr_iid: int,
     discussion_id: str,
     note_id: int,
-) -> dict:
+) -> DiscussionNoteDeleteResult:
     """Delete a reply in a discussion thread on a merge request.
 
     Args:
@@ -386,8 +371,8 @@ def delete_merge_request_discussion_note(
         note_id: Note ID to delete
     """
     project = get_project(project_id)
-    mr = cast(ProjectMergeRequest, project.mergerequests.get(mr_iid))
-    discussion = cast(ProjectMergeRequestDiscussion, mr.discussions.get(discussion_id, lazy=True))
+    mr = project.mergerequests.get(mr_iid)
+    discussion = mr.discussions.get(discussion_id, lazy=True)
 
     logger.warning(
         f"Deleting discussion note {note_id} from discussion {discussion_id} "
@@ -395,13 +380,12 @@ def delete_merge_request_discussion_note(
     )
     discussion.notes.delete(note_id)
 
-    return_data: dict[str, Any] = {
+    return DiscussionNoteDeleteResult.model_validate({
         "deleted": True,
         "note_id": note_id,
         "discussion_id": discussion_id,
         "merge_request_iid": mr_iid,
-    }
-    return return_data
+    })
 
 
 @mcp.tool(
@@ -413,7 +397,6 @@ def delete_merge_request_discussion_note(
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def create_note(
     project_id: str,
     mr_iid: int,
@@ -439,11 +422,11 @@ def create_note(
             - new_line: line number in head version
     """
     project = get_project(project_id)
-    mr = cast(ProjectMergeRequest, project.mergerequests.get(mr_iid))
+    mr = project.mergerequests.get(mr_iid)
 
     data: dict[str, Any] = {"body": body}
     if position:
         data["position"] = position
 
     discussion = mr.discussions.create(data)
-    return DiscussionSummary.model_validate(discussion, from_attributes=True)
+    return DiscussionSummary.from_gitlab(discussion)

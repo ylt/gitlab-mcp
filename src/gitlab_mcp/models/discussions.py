@@ -54,7 +54,7 @@ class DiscussionSummary(BaseGitLabModel):
         if not v:
             return []
         # Convert raw note dicts to NoteSummary models
-        return [NoteSummary.model_validate(note, from_attributes=True) for note in v]
+        return [NoteSummary.from_gitlab(note) for note in v]
 
     @field_serializer("created_at")
     def serialize_created(self, v: str) -> str:
@@ -65,3 +65,21 @@ class DiscussionSummary(BaseGitLabModel):
     def serialize_updated(self, v: str | None) -> str | None:
         """Format as relative time."""
         return relative_time(v) if v else None
+
+
+class NoteDeleteResult(BaseGitLabModel):
+    """Result of deleting a note."""
+
+    deleted: bool = Field(description="True if note was deleted")
+    note_id: int = Field(description="ID of the deleted note")
+    merge_request_iid: int | None = Field(default=None, description="MR IID if applicable")
+    discussion_id: str | None = Field(default=None, description="Discussion ID if applicable")
+
+
+class DiscussionNoteDeleteResult(BaseGitLabModel):
+    """Result of deleting a discussion note/reply."""
+
+    deleted: bool = Field(description="True if note was deleted")
+    note_id: int = Field(description="ID of the deleted note")
+    discussion_id: str = Field(description="Discussion ID")
+    merge_request_iid: int = Field(description="MR IID")

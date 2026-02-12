@@ -20,24 +20,24 @@ class ProjectSummary(BaseGitLabModel):
     last_activity_at: str = "unknown"
     open_issues_count: int = 0
 
-    @field_serializer('description')
+    @field_serializer("description")
     def serialize_description(self, v: str | None) -> str:
         """Convert None to empty string for output."""
         return "" if v is None else v
 
-    @field_validator('default_branch', mode='before')
+    @field_validator("default_branch", mode="before")
     @classmethod
     def default_branch_fallback(cls, v):
         """Provide fallback if None."""
         return v if v else "main"
 
-    @field_validator('created_at', mode='before')
+    @field_validator("created_at", mode="before")
     @classmethod
     def format_created(cls, v):
         """Convert datetime to relative time."""
         return relative_time(v) if v else "unknown"
 
-    @field_validator('last_activity_at', mode='before')
+    @field_validator("last_activity_at", mode="before")
     @classmethod
     def format_last_activity(cls, v):
         """Convert datetime to relative time or unknown."""
@@ -50,8 +50,9 @@ class ProjectSummary(BaseGitLabModel):
         if not self.last_activity_at or self.last_activity_at == "unknown":
             return False
         from datetime import datetime, timedelta
+
         try:
-            activity_date = datetime.fromisoformat(self.last_activity_at.replace('Z', '+00:00'))
+            activity_date = datetime.fromisoformat(self.last_activity_at.replace("Z", "+00:00"))
             return datetime.now(activity_date.tzinfo) - activity_date < timedelta(days=30)
         except (ValueError, AttributeError, TypeError):
             return False
@@ -71,7 +72,7 @@ class ProjectMember(BaseGitLabModel):
     access_level: int | str
     expires_at: str | None = None
 
-    @field_validator('access_level', mode='before')
+    @field_validator("access_level", mode="before")
     @classmethod
     def convert_access_level(cls, v):
         """Convert numeric access level codes to strings."""

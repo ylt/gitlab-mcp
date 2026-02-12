@@ -4,9 +4,8 @@ from __future__ import annotations
 
 # pyright: reportUnknownMemberType=false, reportUnknownVariableType=false, reportUnknownArgumentType=false
 
-from typing import Any, cast
+from typing import Any
 
-from gitlab.v4.objects import ProjectMergeRequest
 from gitlab_mcp.server import mcp
 from gitlab_mcp.client import get_project
 from gitlab_mcp.models import (
@@ -21,7 +20,6 @@ from gitlab_mcp.models import (
 )
 from gitlab_mcp.utils.pagination import paginate
 from gitlab_mcp.utils.query import build_filters, build_sort
-from gitlab_mcp.utils.serialization import serialize_pydantic
 
 
 @mcp.tool(
@@ -31,7 +29,6 @@ from gitlab_mcp.utils.serialization import serialize_pydantic
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def get_merge_request(project_id: str, merge_request_iid: int) -> MergeRequestSummary:
     """Get details of a merge request.
 
@@ -40,8 +37,8 @@ def get_merge_request(project_id: str, merge_request_iid: int) -> MergeRequestSu
         merge_request_iid: MR number within the project
     """
     project = get_project(project_id)
-    mr = cast(ProjectMergeRequest, project.mergerequests.get(merge_request_iid))
-    return MergeRequestSummary.model_validate(mr, from_attributes=True)
+    mr = project.mergerequests.get(merge_request_iid)
+    return MergeRequestSummary.from_gitlab(mr)
 
 
 @mcp.tool(
@@ -51,7 +48,6 @@ def get_merge_request(project_id: str, merge_request_iid: int) -> MergeRequestSu
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def list_merge_requests(
     project_id: str,
     per_page: int = 20,
@@ -109,7 +105,7 @@ def list_merge_requests(
         **all_params,
     )
 
-    return [MergeRequestSummary.model_validate(mr, from_attributes=True) for mr in mrs]
+    return [MergeRequestSummary.from_gitlab(mr) for mr in mrs]
 
 
 @mcp.tool(
@@ -121,7 +117,6 @@ def list_merge_requests(
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def create_merge_request(
     project_id: str,
     source_branch: str,
@@ -149,7 +144,7 @@ def create_merge_request(
         milestone_id: Milestone ID to assign
     """
     project = get_project(project_id)
-    data = {
+    data: dict[str, Any] = {
         "source_branch": source_branch,
         "target_branch": target_branch,
         "title": title,
@@ -166,7 +161,7 @@ def create_merge_request(
         data["milestone_id"] = milestone_id
 
     mr = project.mergerequests.create(data)
-    return MergeRequestSummary.model_validate(mr, from_attributes=True)
+    return MergeRequestSummary.from_gitlab(mr)
 
 
 @mcp.tool(
@@ -178,7 +173,6 @@ def create_merge_request(
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def merge_merge_request(
     project_id: str,
     merge_request_iid: int,
@@ -200,7 +194,7 @@ def merge_merge_request(
         should_remove_source_branch: Delete source branch after merge
     """
     project = get_project(project_id)
-    mr = cast(ProjectMergeRequest, project.mergerequests.get(merge_request_iid))
+    mr = project.mergerequests.get(merge_request_iid)
 
     # Use should_remove_source_branch if provided, otherwise fall back to delete_source_branch for backwards compatibility
     remove_source = should_remove_source_branch or delete_source_branch
@@ -216,8 +210,8 @@ def merge_merge_request(
 
     mr.merge(**merge_kwargs)  # type: ignore[arg-type]
     # Refresh to get updated state
-    mr = cast(ProjectMergeRequest, project.mergerequests.get(merge_request_iid))
-    return MergeRequestSummary.model_validate(mr, from_attributes=True)
+    mr = project.mergerequests.get(merge_request_iid)
+    return MergeRequestSummary.from_gitlab(mr)
 
 
 @mcp.tool(
@@ -227,7 +221,6 @@ def merge_merge_request(
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def get_merge_request_diff(
     project_id: str,
     merge_request_iid: int,
@@ -247,7 +240,7 @@ def get_merge_request_diff(
     from fnmatch import fnmatch
 
     project = get_project(project_id)
-    mr = cast(ProjectMergeRequest, project.mergerequests.get(merge_request_iid))
+    mr = project.mergerequests.get(merge_request_iid)
     changes = mr.changes()
 
     # Transform to AI-friendly format
@@ -297,7 +290,6 @@ def _diff_status(change: dict) -> str:
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def summarize_merge_request_changes(
     project_id: str,
     mr_iid: int,
@@ -312,7 +304,7 @@ def summarize_merge_request_changes(
         Summary containing files changed, additions, deletions, and per-file details
     """
     project = get_project(project_id)
-    mr = cast(ProjectMergeRequest, project.mergerequests.get(mr_iid))
+    mr = project.mergerequests.get(mr_iid)
     changes = mr.changes()
 
     files = []
@@ -339,14 +331,14 @@ def summarize_merge_request_changes(
         change["status"] = _diff_status(change)
         change["additions"] = additions
         change["deletions"] = deletions
-        files.append(FileChange.model_validate(change, from_attributes=True))
+        files.append(FileChange.from_gitlab(change))
 
-    return ChangesSummary(
-        files_changed=len(files),
-        additions=total_additions,
-        deletions=total_deletions,
-        files=files,
-    )
+    return ChangesSummary.model_validate({
+        "files_changed": len(files),
+        "additions": total_additions,
+        "deletions": total_deletions,
+        "files": files,
+    })
 
 
 @mcp.tool(
@@ -358,7 +350,6 @@ def summarize_merge_request_changes(
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def approve_merge_request(project_id: str, merge_request_iid: int) -> ApprovalResult:
     """Approve a merge request.
 
@@ -367,9 +358,9 @@ def approve_merge_request(project_id: str, merge_request_iid: int) -> ApprovalRe
         merge_request_iid: MR number
     """
     project = get_project(project_id)
-    mr = cast(ProjectMergeRequest, project.mergerequests.get(merge_request_iid))
+    mr = project.mergerequests.get(merge_request_iid)
     mr.approve()
-    return ApprovalResult(approved=True, merge_request_iid=merge_request_iid)
+    return ApprovalResult.model_validate({"approved": True, "merge_request_iid": merge_request_iid})
 
 
 @mcp.tool(
@@ -381,7 +372,6 @@ def approve_merge_request(project_id: str, merge_request_iid: int) -> ApprovalRe
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def unapprove_merge_request(project_id: str, merge_request_iid: int) -> ApprovalResult:
     """Remove your approval from a merge request.
 
@@ -390,9 +380,9 @@ def unapprove_merge_request(project_id: str, merge_request_iid: int) -> Approval
         merge_request_iid: MR number
     """
     project = get_project(project_id)
-    mr = cast(ProjectMergeRequest, project.mergerequests.get(merge_request_iid))
+    mr = project.mergerequests.get(merge_request_iid)
     mr.unapprove()
-    return ApprovalResult(approved=False, merge_request_iid=merge_request_iid)
+    return ApprovalResult.model_validate({"approved": False, "merge_request_iid": merge_request_iid})
 
 
 @mcp.tool(
@@ -404,7 +394,6 @@ def unapprove_merge_request(project_id: str, merge_request_iid: int) -> Approval
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def update_merge_request(
     project_id: str,
     mr_iid: int,
@@ -426,7 +415,7 @@ def update_merge_request(
         assignee_ids: List of assignee user IDs
     """
     project = get_project(project_id)
-    mr = cast(ProjectMergeRequest, project.mergerequests.get(mr_iid))
+    mr = project.mergerequests.get(mr_iid)
 
     # Update attributes directly on the MR object
     if title is not None:
@@ -442,8 +431,8 @@ def update_merge_request(
 
     mr.save()
     # Refresh to get updated state
-    mr = cast(ProjectMergeRequest, project.mergerequests.get(mr_iid))
-    return MergeRequestSummary.model_validate(mr, from_attributes=True)
+    mr = project.mergerequests.get(mr_iid)
+    return MergeRequestSummary.from_gitlab(mr)
 
 
 @mcp.tool(
@@ -453,7 +442,6 @@ def update_merge_request(
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def get_merge_request_approval_state(project_id: str, mr_iid: int) -> ApprovalStateDetailed:
     """Get approval state of a merge request.
 
@@ -462,9 +450,9 @@ def get_merge_request_approval_state(project_id: str, mr_iid: int) -> ApprovalSt
         mr_iid: MR number
     """
     project = get_project(project_id)
-    mr = cast(ProjectMergeRequest, project.mergerequests.get(mr_iid))
+    mr = project.mergerequests.get(mr_iid)
     approvals = mr.approvals.get()
-    return ApprovalStateDetailed.model_validate(approvals, from_attributes=True)
+    return ApprovalStateDetailed.from_gitlab(approvals)
 
 
 @mcp.tool(
@@ -474,7 +462,6 @@ def get_merge_request_approval_state(project_id: str, mr_iid: int) -> ApprovalSt
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def get_merge_request_notes(
     project_id: str,
     mr_iid: int,
@@ -488,9 +475,9 @@ def get_merge_request_notes(
         limit: Maximum number of notes to return
     """
     project = get_project(project_id)
-    mr = cast(ProjectMergeRequest, project.mergerequests.get(mr_iid))
+    mr = project.mergerequests.get(mr_iid)
     notes = mr.notes.list(per_page=limit)
-    return [MergeRequestNote.model_validate(note, from_attributes=True) for note in notes]
+    return [MergeRequestNote.from_gitlab(note) for note in notes]
 
 
 @mcp.tool(
@@ -500,7 +487,6 @@ def get_merge_request_notes(
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def get_merge_request_note(
     project_id: str,
     mr_iid: int,
@@ -514,9 +500,9 @@ def get_merge_request_note(
         note_id: Note ID
     """
     project = get_project(project_id)
-    mr = cast(ProjectMergeRequest, project.mergerequests.get(mr_iid))
+    mr = project.mergerequests.get(mr_iid)
     note = mr.notes.get(note_id)
-    return MergeRequestNote.model_validate(note, from_attributes=True)
+    return MergeRequestNote.from_gitlab(note)
 
 
 @mcp.tool(
@@ -526,7 +512,6 @@ def get_merge_request_note(
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def list_merge_request_diffs(
     project_id: str,
     mr_iid: int,
@@ -540,13 +525,10 @@ def list_merge_request_diffs(
         limit: Maximum number of diffs to return
     """
     project = get_project(project_id)
-    mr = cast(ProjectMergeRequest, project.mergerequests.get(mr_iid))
+    mr = project.mergerequests.get(mr_iid)
     diffs = mr.diffs.list(per_page=limit)
 
-    return [
-        MergeRequestDiff.model_validate(diff, from_attributes=True)
-        for diff in diffs
-    ]
+    return [MergeRequestDiff.from_gitlab(diff) for diff in diffs]
 
 
 @mcp.tool(
@@ -556,7 +538,6 @@ def list_merge_request_diffs(
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def list_merge_request_versions(project_id: str, mr_iid: int) -> list[MergeRequestVersion]:
     """List versions (iterations) of a merge request.
 
@@ -565,9 +546,11 @@ def list_merge_request_versions(project_id: str, mr_iid: int) -> list[MergeReque
         mr_iid: MR number
     """
     project = get_project(project_id)
-    mr = cast(ProjectMergeRequest, project.mergerequests.get(mr_iid))
+    mr = project.mergerequests.get(mr_iid)
     versions = mr.versions.list()
-    return [MergeRequestVersion.model_validate(version, from_attributes=True) for version in versions]
+    return [
+        MergeRequestVersion.from_gitlab(version) for version in versions
+    ]
 
 
 @mcp.tool(
@@ -577,7 +560,6 @@ def list_merge_request_versions(project_id: str, mr_iid: int) -> list[MergeReque
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def get_merge_request_version(
     project_id: str,
     mr_iid: int,
@@ -591,9 +573,9 @@ def get_merge_request_version(
         version_id: Version ID
     """
     project = get_project(project_id)
-    mr = cast(ProjectMergeRequest, project.mergerequests.get(mr_iid))
+    mr = project.mergerequests.get(mr_iid)
     version = mr.versions.get(version_id)
-    return MergeRequestVersion.model_validate(version, from_attributes=True)
+    return MergeRequestVersion.from_gitlab(version)
 
 
 @mcp.tool(
@@ -603,7 +585,6 @@ def get_merge_request_version(
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def get_merge_request_diffs(
     project_id: str,
     mr_iid: int,
@@ -615,10 +596,7 @@ def get_merge_request_diffs(
         mr_iid: MR number
     """
     project = get_project(project_id)
-    mr = cast(ProjectMergeRequest, project.mergerequests.get(mr_iid))
+    mr = project.mergerequests.get(mr_iid)
     diffs = mr.diffs.list(get_all=True)
 
-    return [
-        MergeRequestDiff.model_validate(diff, from_attributes=True)
-        for diff in diffs
-    ]
+    return [MergeRequestDiff.from_gitlab(diff) for diff in diffs]

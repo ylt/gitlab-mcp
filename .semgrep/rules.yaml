@@ -1,0 +1,25 @@
+rules:
+  - id: mcp-tool-no-dict-return
+    pattern-either:
+      - pattern: |
+          @mcp.tool(...)
+          def $FUNC(...) -> dict[...]:
+              ...
+      - pattern: |
+          @mcp.tool(...)
+          def $FUNC(...) -> list[dict[...]]:
+              ...
+      - pattern: |
+          @mcp.tool
+          def $FUNC(...) -> dict[...]:
+              ...
+      - pattern: |
+          @mcp.tool
+          def $FUNC(...) -> list[dict[...]]:
+              ...
+    message: MCP tools must return Pydantic models, not dicts. Create a model in models/ and use @serialize_pydantic decorator.
+    languages: [python]
+    severity: ERROR
+    paths:
+      include:
+        - src/gitlab_mcp/tools/

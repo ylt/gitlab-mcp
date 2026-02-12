@@ -1,7 +1,6 @@
 """User tools."""
 
 from gitlab_mcp.server import mcp
-from gitlab_mcp.utils.serialization import serialize_pydantic
 from gitlab_mcp.client import get_client
 from gitlab_mcp.models import UserSummary, EventSummary
 from gitlab_mcp.utils.pagination import paginate
@@ -15,7 +14,6 @@ from gitlab_mcp.utils.query import build_filters, build_sort
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def get_users(
     search: str = "",
     per_page: int = 20,
@@ -40,7 +38,7 @@ def get_users(
         per_page=per_page,
         **filters,
     )
-    return [UserSummary.model_validate(u, from_attributes=True) for u in users]
+    return [UserSummary.from_gitlab(u) for u in users]
 
 
 @mcp.tool(
@@ -50,7 +48,6 @@ def get_users(
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def list_events(limit: int = 20) -> list[EventSummary]:
     """List authenticated user's events and activity.
 
@@ -59,4 +56,4 @@ def list_events(limit: int = 20) -> list[EventSummary]:
     """
     client = get_client()
     events = client.events.list(per_page=limit)
-    return [EventSummary.model_validate(e, from_attributes=True) for e in events]
+    return [EventSummary.from_gitlab(e) for e in events]

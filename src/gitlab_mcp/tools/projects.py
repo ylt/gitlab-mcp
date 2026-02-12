@@ -1,14 +1,12 @@
 """Project tools."""
 
-from typing import Any, cast
-from gitlab.v4.objects import Group, Project
+from typing import Any
 from gitlab_mcp.server import mcp
 from gitlab_mcp.client import get_project as _get_project, get_client
 from gitlab_mcp.models.projects import ProjectSummary, ProjectMember
 from gitlab_mcp.models.base import relative_time
 from gitlab_mcp.utils.pagination import paginate
 from gitlab_mcp.utils.query import build_filters, build_sort
-from gitlab_mcp.utils.serialization import serialize_pydantic
 
 
 @mcp.tool(
@@ -18,7 +16,6 @@ from gitlab_mcp.utils.serialization import serialize_pydantic
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def get_project(project_id: str) -> ProjectSummary:
     """Get project details.
 
@@ -29,7 +26,7 @@ def get_project(project_id: str) -> ProjectSummary:
         Project details including name, description, visibility, branches, etc.
     """
     project = _get_project(project_id)
-    return ProjectSummary.model_validate(project, from_attributes=True)
+    return ProjectSummary.from_gitlab(project)
 
 
 @mcp.tool(
@@ -39,7 +36,6 @@ def get_project(project_id: str) -> ProjectSummary:
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def list_projects(
     search: str = "",
     per_page: int = 20,
@@ -74,7 +70,7 @@ def list_projects(
         filters["membership"] = True
 
     projects = paginate(client.projects, per_page=per_page, **filters)
-    return [ProjectSummary.model_validate(p, from_attributes=True) for p in projects]
+    return [ProjectSummary.from_gitlab(p) for p in projects]
 
 
 @mcp.tool(
@@ -84,7 +80,6 @@ def list_projects(
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def list_project_members(
     project_id: str,
     search: str = "",
@@ -106,7 +101,7 @@ def list_project_members(
     """
     project = _get_project(project_id)
 
-    filters = {}
+    filters: dict[str, Any] = {}
     if search:
         filters["search"] = search
     if access_level is not None:
@@ -119,7 +114,7 @@ def list_project_members(
         per_page=per_page,
         **filters,
     )
-    return [ProjectMember.model_validate(m, from_attributes=True) for m in members]
+    return [ProjectMember.from_gitlab(m) for m in members]
 
 
 @mcp.tool(
@@ -129,7 +124,6 @@ def list_project_members(
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def list_group_projects(
     group_id: str,
     per_page: int = 20,
@@ -152,7 +146,7 @@ def list_group_projects(
         List of projects in the group
     """
     client = get_client()
-    group = cast(Group, client.groups.get(group_id))
+    group = client.groups.get(group_id)
 
     filters = build_filters(visibility=visibility)
     filters.update(build_sort(order_by=order_by, sort=sort))
@@ -160,7 +154,7 @@ def list_group_projects(
         filters["include_subgroups"] = True
 
     projects = paginate(group.projects, per_page=per_page, **filters)
-    return [ProjectSummary.model_validate(p, from_attributes=True) for p in projects]
+    return [ProjectSummary.from_gitlab(p) for p in projects]
 
 
 @mcp.tool(
@@ -262,7 +256,6 @@ def get_project_events(
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def fork_repository(
     project_id: str,
     namespace: str,
@@ -273,7 +266,7 @@ def fork_repository(
     snippets_enabled: bool | None = None,
     wait_for_completion: bool = False,
     timeout_seconds: int = 300,
-) -> ProjectSummary | dict:
+) -> ProjectSummary:
     """Fork a project to a namespace.
 
     Args:
@@ -313,19 +306,19 @@ def fork_repository(
         client = get_client()
         start_time = time.time()
         while time.time() - start_time < timeout_seconds:
-            fork = cast(Project, client.projects.get(fork_id))
+            fork = client.projects.get(fork_id)
             # Fork is ready when import_source is None/empty
             if not hasattr(fork, "import_source") or not fork.import_source:
                 break
             time.sleep(2)
         else:
-            # Timeout occurred - return dict with warning
-            return {
-                **ProjectSummary.model_validate(fork, from_attributes=True).model_dump(),
-                "warning": f"Fork did not complete within {timeout_seconds}s, returning current state",
-            }
+            # Timeout occurred
+            raise RuntimeError(
+                f"Fork did not complete within {timeout_seconds}s. "
+                f"Fork ID: {fork_id}. Check GitLab UI for status."
+            )
 
-    return ProjectSummary.model_validate(fork, from_attributes=True)
+    return ProjectSummary.from_gitlab(fork)
 
 
 @mcp.tool(
@@ -337,7 +330,6 @@ def fork_repository(
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def create_repository(
     name: str,
     namespace: str,
@@ -402,4 +394,4 @@ def create_repository(
         project_data["cicd_template_key"] = cicd_template_key
 
     project = client.projects.create(project_data)
-    return ProjectSummary.model_validate(project, from_attributes=True)
+    return ProjectSummary.from_gitlab(project)

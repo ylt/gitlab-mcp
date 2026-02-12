@@ -1,11 +1,13 @@
 """Draft notes tools for merge requests."""
 
-from typing import cast
-from gitlab.v4.objects import ProjectMergeRequest, ProjectMergeRequestDraftNote
 from gitlab_mcp.server import mcp
 from gitlab_mcp.client import get_project
-from gitlab_mcp.models import DraftNoteSummary
-from gitlab_mcp.utils.serialization import serialize_pydantic
+from gitlab_mcp.models import (
+    DraftNoteSummary,
+    DraftNoteDeleteResult,
+    DraftNotePublishResult,
+    BulkPublishDraftNotesResult,
+)
 
 
 @mcp.tool(
@@ -15,7 +17,6 @@ from gitlab_mcp.utils.serialization import serialize_pydantic
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def list_draft_notes(project_id: str, mr_iid: int) -> list[DraftNoteSummary]:
     """List all draft notes on a merge request.
 
@@ -26,11 +27,9 @@ def list_draft_notes(project_id: str, mr_iid: int) -> list[DraftNoteSummary]:
         mr_iid: Merge request number within the project
     """
     project = get_project(project_id)
-    mr = cast(ProjectMergeRequest, project.mergerequests.get(mr_iid))
+    mr = project.mergerequests.get(mr_iid)
     draft_notes = mr.draft_notes.list()
-    return [
-        DraftNoteSummary.model_validate(n, from_attributes=True) for n in draft_notes
-    ]
+    return [DraftNoteSummary.from_gitlab(n) for n in draft_notes]
 
 
 @mcp.tool(
@@ -40,7 +39,6 @@ def list_draft_notes(project_id: str, mr_iid: int) -> list[DraftNoteSummary]:
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def get_draft_note(project_id: str, mr_iid: int, draft_note_id: int) -> DraftNoteSummary:
     """Get a specific draft note.
 
@@ -50,9 +48,9 @@ def get_draft_note(project_id: str, mr_iid: int, draft_note_id: int) -> DraftNot
         draft_note_id: Draft note ID
     """
     project = get_project(project_id)
-    mr = cast(ProjectMergeRequest, project.mergerequests.get(mr_iid))
-    note = cast(ProjectMergeRequestDraftNote, mr.draft_notes.get(draft_note_id))
-    return DraftNoteSummary.model_validate(note, from_attributes=True)
+    mr = project.mergerequests.get(mr_iid)
+    note = mr.draft_notes.get(draft_note_id)
+    return DraftNoteSummary.from_gitlab(note)
 
 
 @mcp.tool(
@@ -64,7 +62,6 @@ def get_draft_note(project_id: str, mr_iid: int, draft_note_id: int) -> DraftNot
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def create_draft_note(
     project_id: str,
     mr_iid: int,
@@ -80,12 +77,12 @@ def create_draft_note(
         in_reply_to_discussion_id: Optional discussion ID to reply to
     """
     project = get_project(project_id)
-    mr = cast(ProjectMergeRequest, project.mergerequests.get(mr_iid))
+    mr = project.mergerequests.get(mr_iid)
     data: dict[str, str | int] = {"body": note}
     if in_reply_to_discussion_id:
         data["in_reply_to_discussion_id"] = in_reply_to_discussion_id
-    draft_note = cast(ProjectMergeRequestDraftNote, mr.draft_notes.create(data))
-    return DraftNoteSummary.model_validate(draft_note, from_attributes=True)
+    draft_note = mr.draft_notes.create(data)
+    return DraftNoteSummary.from_gitlab(draft_note)
 
 
 @mcp.tool(
@@ -97,7 +94,6 @@ def create_draft_note(
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def update_draft_note(
     project_id: str,
     mr_iid: int,
@@ -113,11 +109,11 @@ def update_draft_note(
         note: New draft note text (markdown supported)
     """
     project = get_project(project_id)
-    mr = cast(ProjectMergeRequest, project.mergerequests.get(mr_iid))
-    draft_note = cast(ProjectMergeRequestDraftNote, mr.draft_notes.get(draft_note_id))
+    mr = project.mergerequests.get(mr_iid)
+    draft_note = mr.draft_notes.get(draft_note_id)
     draft_note.body = note
     draft_note.save()
-    return DraftNoteSummary.model_validate(draft_note, from_attributes=True)
+    return DraftNoteSummary.from_gitlab(draft_note)
 
 
 @mcp.tool(
@@ -129,7 +125,7 @@ def update_draft_note(
         "openWorldHint": True,
     }
 )
-def delete_draft_note(project_id: str, mr_iid: int, draft_note_id: int) -> dict[str, bool | int]:
+def delete_draft_note(project_id: str, mr_iid: int, draft_note_id: int) -> DraftNoteDeleteResult:
     """Delete a draft note.
 
     Args:
@@ -138,9 +134,9 @@ def delete_draft_note(project_id: str, mr_iid: int, draft_note_id: int) -> dict[
         draft_note_id: Draft note ID to delete
     """
     project = get_project(project_id)
-    mr = cast(ProjectMergeRequest, project.mergerequests.get(mr_iid))
+    mr = project.mergerequests.get(mr_iid)
     mr.draft_notes.delete(draft_note_id)
-    return {"deleted": True, "draft_note_id": draft_note_id}
+    return DraftNoteDeleteResult.model_validate({"deleted": True, "draft_note_id": draft_note_id})
 
 
 @mcp.tool(
@@ -156,7 +152,7 @@ def publish_draft_note(
     project_id: str,
     mr_iid: int,
     draft_note_id: int,
-) -> dict[str, bool | int]:
+) -> DraftNotePublishResult:
     """Publish a single draft note as a comment.
 
     Args:
@@ -165,10 +161,10 @@ def publish_draft_note(
         draft_note_id: Draft note ID to publish
     """
     project = get_project(project_id)
-    mr = cast(ProjectMergeRequest, project.mergerequests.get(mr_iid))
+    mr = project.mergerequests.get(mr_iid)
     draft_note = mr.draft_notes.get(draft_note_id)
     draft_note.publish()
-    return {"published": True, "draft_note_id": draft_note_id}
+    return DraftNotePublishResult.model_validate({"published": True, "draft_note_id": draft_note_id})
 
 
 @mcp.tool(
@@ -180,7 +176,7 @@ def publish_draft_note(
         "openWorldHint": True,
     }
 )
-def bulk_publish_draft_notes(project_id: str, mr_iid: int) -> dict[str, bool | int]:
+def bulk_publish_draft_notes(project_id: str, mr_iid: int) -> BulkPublishDraftNotesResult:
     """Publish all draft notes on a merge request as comments.
 
     Args:
@@ -188,6 +184,6 @@ def bulk_publish_draft_notes(project_id: str, mr_iid: int) -> dict[str, bool | i
         mr_iid: Merge request number
     """
     project = get_project(project_id)
-    mr = cast(ProjectMergeRequest, project.mergerequests.get(mr_iid))
+    mr = project.mergerequests.get(mr_iid)
     mr.publish_all_draft_notes()
-    return {"published_all": True, "merge_request_iid": mr_iid}
+    return BulkPublishDraftNotesResult.model_validate({"published_all": True, "merge_request_iid": mr_iid})

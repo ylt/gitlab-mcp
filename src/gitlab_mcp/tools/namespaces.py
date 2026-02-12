@@ -1,14 +1,12 @@
 """Namespace tools for GitLab."""
 
 from typing import Any, cast
-from gitlab.v4.objects import Namespace
 from gitlab_mcp.server import mcp
 from gitlab_mcp.client import get_client
 from gitlab_mcp.utils.pagination import paginate
 from gitlab_mcp.utils.query import build_filters, build_sort
 from gitlab_mcp.utils.cache import cached
-from gitlab_mcp.utils.serialization import serialize_pydantic
-from gitlab_mcp.models import NamespaceSummary
+from gitlab_mcp.models import NamespaceSummary, NamespaceVerification
 
 
 @mcp.tool(
@@ -18,7 +16,6 @@ from gitlab_mcp.models import NamespaceSummary
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def list_namespaces(
     per_page: int = 20,
     search: str | None = None,
@@ -45,7 +42,7 @@ def list_namespaces(
         **sort_params,
     )
 
-    return [NamespaceSummary.model_validate(ns, from_attributes=True) for ns in namespaces]
+    return [NamespaceSummary.from_gitlab(ns) for ns in namespaces]
 
 
 @mcp.tool(
@@ -55,7 +52,6 @@ def list_namespaces(
         "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def get_namespace(namespace_id: int | str) -> NamespaceSummary:
     """Get namespace details.
 
@@ -63,8 +59,8 @@ def get_namespace(namespace_id: int | str) -> NamespaceSummary:
         namespace_id: Namespace ID or path (e.g., "mygroup" or numeric ID)
     """
     client = get_client()
-    namespace = cast(Namespace, client.namespaces.get(namespace_id))
-    return NamespaceSummary.model_validate(namespace, from_attributes=True)
+    namespace = client.namespaces.get(namespace_id)
+    return NamespaceSummary.from_gitlab(namespace)
 
 
 @cached(ttl=300)
@@ -85,13 +81,16 @@ def _get_namespace_info(path: str) -> dict[str, Any] | None:
         namespace = client.namespaces.get(path, lazy=True)
         namespace.reload()
 
-        return cast(dict[str, Any], {
-            "id": namespace.id,
-            "name": namespace.name,
-            "path": namespace.path,
-            "full_path": namespace.full_path,
-            "kind": namespace.kind,
-        })
+        return cast(
+            dict[str, Any],
+            {
+                "id": namespace.id,
+                "name": namespace.name,
+                "path": namespace.path,
+                "full_path": namespace.full_path,
+                "kind": namespace.kind,
+            },
+        )
     except Exception:
         return None
 
@@ -103,7 +102,7 @@ def _get_namespace_info(path: str) -> dict[str, Any] | None:
         "openWorldHint": True,
     }
 )
-def verify_namespace(path: str, suggest_similar: bool = False) -> dict[str, Any]:
+def verify_namespace(path: str, suggest_similar: bool = False) -> NamespaceVerification:
     """Check if a namespace path exists.
 
     Args:
@@ -118,10 +117,10 @@ def verify_namespace(path: str, suggest_similar: bool = False) -> dict[str, Any]
     namespace_info = _get_namespace_info(path)
 
     if namespace_info is not None:
-        return {"exists": True, **namespace_info}
+        return NamespaceVerification.model_validate({"exists": True, **namespace_info})
 
     # Namespace not found
-    result: dict[str, Any] = {
+    result_data: dict[str, Any] = {
         "exists": False,
         "error": f"Namespace not found: {path}",
         "path": path,
@@ -143,8 +142,8 @@ def verify_namespace(path: str, suggest_similar: bool = False) -> dict[str, Any]
                 }
                 for ns in search_results
             ]
-            result["suggestions"] = suggestions
+            result_data["suggestions"] = suggestions
         except Exception:
-            result["suggestions"] = []
+            result_data["suggestions"] = []
 
-    return result
+    return NamespaceVerification.model_validate(result_data)

@@ -42,13 +42,13 @@ class EventSummary(BaseGitLabModel):
     author: str | None = None
     created_at: str = Field(exclude=True)
 
-    @field_validator('target_title', mode='before')
+    @field_validator("target_title", mode="before")
     @classmethod
     def clean_target_title(cls, v):
         """Clean null target titles."""
         return safe_str(v)
 
-    @field_validator('author', mode='before')
+    @field_validator("author", mode="before")
     @classmethod
     def extract_author(cls, v):
         """Extract username from author dict."""
@@ -81,7 +81,7 @@ class IterationSummary(BaseGitLabModel):
     web_url: str
     created_at: str = Field(exclude=True)
 
-    @field_serializer('description')
+    @field_serializer("description")
     def serialize_description(self, v: str | None) -> str:
         """Clean description (None → empty string)."""
         return safe_str(v)
@@ -97,3 +97,16 @@ class IterationSummary(BaseGitLabModel):
     def created(self) -> str:
         """When created (relative time)."""
         return relative_time(self.created_at)
+
+
+class NamespaceVerification(BaseGitLabModel):
+    """Result of verifying a namespace."""
+
+    exists: bool = Field(description="Whether the namespace exists")
+    id: int | None = Field(None, description="Namespace ID if found")
+    name: str | None = Field(None, description="Namespace name if found")
+    path: str | None = Field(None, description="Namespace path if found")
+    full_path: str | None = Field(None, description="Full path if found")
+    kind: Literal["user", "group"] | None = Field(None, description="Namespace kind if found")
+    error: str | None = Field(None, description="Error message if not found")
+    suggestions: list[dict] | None = Field(None, description="Similar namespaces if requested")

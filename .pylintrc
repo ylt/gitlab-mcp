@@ -1,0 +1,13 @@
+[MASTER]
+# Load custom plugins
+load-plugins=pylint_plugins.mcp_checker
+init-hook='import sys; sys.path.append(".")'
+
+[MESSAGES CONTROL]
+# Only enable our custom checker by default
+disable=all
+enable=mcp-dict-return,mcp-nested-function,mcp-manual-construction
+
+[FORMAT]
+# Match ruff's line length
+max-line-length=100

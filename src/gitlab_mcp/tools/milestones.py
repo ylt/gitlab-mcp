@@ -1,24 +1,22 @@
 """Milestone tools."""
 
-from typing import Any, cast
-from gitlab.v4.objects import ProjectMilestone, ProjectIssue
+from typing import Any
 from gitlab_mcp.server import mcp
 from gitlab_mcp.client import get_project
-from gitlab_mcp.models import MilestoneSummary, IssueSummary, MergeRequestSummary
+from gitlab_mcp.models import (
+    MilestoneSummary,
+    IssueSummary,
+    MergeRequestSummary,
+    MilestoneDeleteResult,
+    MilestoneBurndownEvent,
+    MilestonePromoteResult,
+)
 from gitlab_mcp.utils.pagination import paginate
 from gitlab_mcp.utils.query import build_filters, build_sort
 from gitlab_mcp.utils.validation import validate_date
-from gitlab_mcp.utils.serialization import serialize_pydantic
 
 
-@mcp.tool(
-    annotations={
-        "title": "List Milestones",
-        "readOnlyHint": True,
-        "openWorldHint": True
-    }
-)
-@serialize_pydantic
+@mcp.tool(annotations={"title": "List Milestones", "readOnlyHint": True, "openWorldHint": True})
 def list_milestones(
     project_id: str,
     per_page: int = 20,
@@ -46,17 +44,10 @@ def list_milestones(
         **filters,
         **sort_params,
     )
-    return [MilestoneSummary.model_validate(m, from_attributes=True) for m in milestones]
+    return [MilestoneSummary.from_gitlab(m) for m in milestones]
 
 
-@mcp.tool(
-    annotations={
-        "title": "Get Milestone",
-        "readOnlyHint": True,
-        "openWorldHint": True
-    }
-)
-@serialize_pydantic
+@mcp.tool(annotations={"title": "Get Milestone", "readOnlyHint": True, "openWorldHint": True})
 def get_milestone(project_id: str, milestone_id: int) -> MilestoneSummary:
     """Get details of a milestone.
 
@@ -65,8 +56,8 @@ def get_milestone(project_id: str, milestone_id: int) -> MilestoneSummary:
         milestone_id: Milestone ID
     """
     project = get_project(project_id)
-    milestone = cast(ProjectMilestone, project.milestones.get(milestone_id))
-    return MilestoneSummary.model_validate(milestone, from_attributes=True)
+    milestone = project.milestones.get(milestone_id)
+    return MilestoneSummary.from_gitlab(milestone)
 
 
 @mcp.tool(
@@ -75,10 +66,9 @@ def get_milestone(project_id: str, milestone_id: int) -> MilestoneSummary:
         "readOnlyHint": False,
         "destructiveHint": False,
         "idempotentHint": False,
-        "openWorldHint": True
+        "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def create_milestone(
     project_id: str,
     title: str,
@@ -103,8 +93,8 @@ def create_milestone(
         data["due_date"] = validate_date(due_date)
     if start_date:
         data["start_date"] = validate_date(start_date)
-    milestone = cast(ProjectMilestone, project.milestones.create(data))
-    return MilestoneSummary.model_validate(milestone, from_attributes=True)
+    milestone = project.milestones.create(data)
+    return MilestoneSummary.from_gitlab(milestone)
 
 
 @mcp.tool(
@@ -113,10 +103,9 @@ def create_milestone(
         "readOnlyHint": False,
         "destructiveHint": False,
         "idempotentHint": True,
-        "openWorldHint": True
+        "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def edit_milestone(
     project_id: str,
     milestone_id: int,
@@ -138,7 +127,7 @@ def edit_milestone(
         state_event: "close" or "activate" to change state
     """
     project = get_project(project_id)
-    milestone = cast(ProjectMilestone, project.milestones.get(milestone_id))
+    milestone = project.milestones.get(milestone_id)
     if title:
         milestone.title = title
     if description:
@@ -150,7 +139,7 @@ def edit_milestone(
     if state_event:
         milestone.state_event = state_event
     milestone.save()
-    return MilestoneSummary.model_validate(milestone, from_attributes=True)
+    return MilestoneSummary.from_gitlab(milestone)
 
 
 @mcp.tool(
@@ -159,10 +148,10 @@ def edit_milestone(
         "readOnlyHint": False,
         "destructiveHint": True,
         "idempotentHint": True,
-        "openWorldHint": True
+        "openWorldHint": True,
     }
 )
-def delete_milestone(project_id: str, milestone_id: int) -> dict[str, Any]:
+def delete_milestone(project_id: str, milestone_id: int) -> MilestoneDeleteResult:
     """Delete a milestone.
 
     Note: Issues and MRs assigned to this milestone will have their milestone cleared.
@@ -173,17 +162,12 @@ def delete_milestone(project_id: str, milestone_id: int) -> dict[str, Any]:
     """
     project = get_project(project_id)
     project.milestones.delete(milestone_id)
-    return {"success": True, "message": f"Milestone {milestone_id} deleted"}
+    return MilestoneDeleteResult.model_validate({"success": True, "message": f"Milestone {milestone_id} deleted"})
 
 
 @mcp.tool(
-    annotations={
-        "title": "List Milestone Issues",
-        "readOnlyHint": True,
-        "openWorldHint": True
-    }
+    annotations={"title": "List Milestone Issues", "readOnlyHint": True, "openWorldHint": True}
 )
-@serialize_pydantic
 def get_milestone_issues(
     project_id: str,
     milestone_id: int,
@@ -203,7 +187,7 @@ def get_milestone_issues(
         sort: Sort direction: asc or desc (default desc)
     """
     project = get_project(project_id)
-    milestone = cast(ProjectMilestone, project.milestones.get(milestone_id))
+    milestone = project.milestones.get(milestone_id)
     filters = build_filters(state=state)
     sort_params = build_sort(order_by=order_by, sort=sort)
     issues = paginate(
@@ -212,17 +196,16 @@ def get_milestone_issues(
         **filters,
         **sort_params,
     )
-    return [IssueSummary.model_validate(i, from_attributes=True) for i in issues]
+    return [IssueSummary.from_gitlab(i) for i in issues]
 
 
 @mcp.tool(
     annotations={
         "title": "List Milestone Merge Requests",
         "readOnlyHint": True,
-        "openWorldHint": True
+        "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def get_milestone_merge_requests(
     project_id: str,
     milestone_id: int,
@@ -242,7 +225,7 @@ def get_milestone_merge_requests(
         sort: Sort direction: asc or desc (default desc)
     """
     project = get_project(project_id)
-    milestone = cast(ProjectMilestone, project.milestones.get(milestone_id))
+    milestone = project.milestones.get(milestone_id)
     filters = build_filters(state=state)
     sort_params = build_sort(order_by=order_by, sort=sort)
     mrs = paginate(
@@ -251,20 +234,20 @@ def get_milestone_merge_requests(
         **filters,
         **sort_params,
     )
-    return [MergeRequestSummary.model_validate(mr, from_attributes=True) for mr in mrs]
+    return [MergeRequestSummary.from_gitlab(mr) for mr in mrs]
 
 
 @mcp.tool(
     annotations={
         "title": "Get Milestone Burndown Events",
         "readOnlyHint": True,
-        "openWorldHint": True
+        "openWorldHint": True,
     }
 )
 def get_milestone_burndown_events(
     project_id: str,
     milestone_id: int,
-) -> list[dict[str, Any]]:
+) -> list[MilestoneBurndownEvent]:
     """Get burndown chart events for a milestone.
 
     Args:
@@ -272,28 +255,21 @@ def get_milestone_burndown_events(
         milestone_id: Milestone ID
     """
     project = get_project(project_id)
-    milestone = cast(ProjectMilestone, project.milestones.get(milestone_id))
+    milestone = project.milestones.get(milestone_id)
     events = milestone.burndown_events.list(get_all=True)
     return [
-        {
-            "id": event.id,
-            "created_at": event.created_at,
-            "weight": event.weight,
-            "user_id": event.user_id,
-            "issue_id": event.issue_id,
-        }
+        MilestoneBurndownEvent(
+            id=event.id,
+            created_at=event.created_at,
+            weight=event.weight,
+            user_id=event.user_id,
+            issue_id=event.issue_id,
+        )
         for event in events
     ]
 
 
-@mcp.tool(
-    annotations={
-        "title": "Get Milestone Issue",
-        "readOnlyHint": True,
-        "openWorldHint": True
-    }
-)
-@serialize_pydantic
+@mcp.tool(annotations={"title": "Get Milestone Issue", "readOnlyHint": True, "openWorldHint": True})
 def get_milestone_issue(
     project_id: str,
     milestone_id: int,
@@ -307,10 +283,10 @@ def get_milestone_issue(
         issue_iid: Issue number within the project
     """
     project = get_project(project_id)
-    milestone = cast(ProjectMilestone, project.milestones.get(milestone_id))
+    milestone = project.milestones.get(milestone_id)
     issue_data: Any = milestone.issues.get(issue_iid)  # type: ignore[union-attr]
-    issue = cast(ProjectIssue, issue_data)
-    return IssueSummary.model_validate(issue, from_attributes=True)
+    issue = issue_data
+    return IssueSummary.from_gitlab(issue)
 
 
 @mcp.tool(
@@ -319,10 +295,10 @@ def get_milestone_issue(
         "readOnlyHint": False,
         "destructiveHint": False,
         "idempotentHint": False,
-        "openWorldHint": True
+        "openWorldHint": True,
     }
 )
-def promote_milestone(project_id: str, milestone_id: int) -> dict:
+def promote_milestone(project_id: str, milestone_id: int) -> MilestonePromoteResult:
     """Promote a project milestone to a group milestone.
 
     Args:
@@ -330,10 +306,22 @@ def promote_milestone(project_id: str, milestone_id: int) -> dict:
         milestone_id: Milestone ID to promote
     """
     project = get_project(project_id)
-    milestone = cast(ProjectMilestone, project.milestones.get(milestone_id))
+    milestone = project.milestones.get(milestone_id)
     milestone.promote()
     # Refresh to get updated state
-    milestone = cast(ProjectMilestone, project.milestones.get(milestone_id))
-    result = MilestoneSummary.model_validate(milestone, from_attributes=True).model_dump()
-    result["promoted"] = True
-    return result
+    milestone = project.milestones.get(milestone_id)
+
+    # Create result with promoted flag
+    result_data = {
+        "id": milestone.id,
+        "title": milestone.title,
+        "description": milestone.description,
+        "state": milestone.state,
+        "due_date": milestone.due_date,
+        "start_date": milestone.start_date,
+        "web_url": milestone.web_url,
+        "created_at": milestone.created_at,
+        "updated_at": milestone.updated_at,
+        "promoted": True,
+    }
+    return MilestonePromoteResult.model_validate(result_data)

@@ -6,7 +6,6 @@ from gitlab_mcp.server import mcp
 from gitlab_mcp.client import get_project
 from gitlab_mcp.config import get_config
 from gitlab_mcp.models.uploads import UploadSummary, DownloadResult
-from gitlab_mcp.utils.serialization import serialize_pydantic
 
 
 @mcp.tool(
@@ -15,10 +14,9 @@ from gitlab_mcp.utils.serialization import serialize_pydantic
         "readOnlyHint": False,
         "destructiveHint": False,
         "idempotentHint": False,
-        "openWorldHint": True
+        "openWorldHint": True,
     }
 )
-@serialize_pydantic
 def upload_markdown(project_id: str, file_path: str) -> UploadSummary:
     """Upload a file to a project and get markdown link.
 
@@ -37,18 +35,13 @@ def upload_markdown(project_id: str, file_path: str) -> UploadSummary:
     # Use project uploads API
     result: Any = project.uploads.create({"file": (file_path.split("/")[-1], file_contents)})  # type: ignore[union-attr]
 
-    return UploadSummary.model_validate(result, from_attributes=True)
+    return UploadSummary.from_gitlab(result)  # type: ignore[arg-type]
 
 
-@mcp.tool(
-    annotations={
-        "title": "Download Attachment",
-        "readOnlyHint": True,
-        "openWorldHint": True
-    }
-)
-@serialize_pydantic
-def download_attachment(project_id: str, secret: str, filename: str, output_path: str = "") -> DownloadResult:
+@mcp.tool(annotations={"title": "Download Attachment", "readOnlyHint": True, "openWorldHint": True})
+def download_attachment(
+    project_id: str, secret: str, filename: str, output_path: str = ""
+) -> DownloadResult:
     """Download an uploaded attachment from a project.
 
     Args:
@@ -75,9 +68,9 @@ def download_attachment(project_id: str, secret: str, filename: str, output_path
     with open(save_path, "wb") as f:
         f.write(response.content)
 
-    return DownloadResult(
-        status="downloaded",
-        filename=filename,
-        path=save_path,
-        size_bytes=len(response.content),
-    )
+    return DownloadResult.model_validate({
+        "status": "downloaded",
+        "filename": filename,
+        "path": save_path,
+        "size_bytes": len(response.content),
+    })

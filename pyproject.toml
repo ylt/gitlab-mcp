@@ -37,10 +37,14 @@ target-version = "py311"
 
 [tool.basedpyright]
 typeCheckingMode = "standard"
+stubPath = "stubs"
 # Only suppress the noisiest warnings from missing library stubs
 reportUnknownMemberType = "warning"
 reportUnknownArgumentType = "warning"
 reportUnknownVariableType = "warning"
+
+[tool.pyrefly]
+search-path = ["stubs"]
 
 [dependency-groups]
 dev = [

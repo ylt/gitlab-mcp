@@ -2,7 +2,7 @@
 
 import gitlab
 import requests
-from typing import cast
+from typing import Any
 from gitlab.v4.objects import Project
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
@@ -64,7 +64,7 @@ def get_client() -> gitlab.Gitlab:
         )
 
         # Determine authentication method (priority: OAuth > Session Cookie > Personal Access Token)
-        auth_kwargs = {}
+        auth_kwargs: dict[str, Any] = {}
         if config.oauth_token:
             auth_kwargs["oauth_token"] = config.oauth_token
         elif config.session_cookie:
@@ -89,4 +89,4 @@ def get_project(project_id: str | None = None) -> Project:
     pid = project_id or config.default_project_id
     if not pid:
         raise ValueError("project_id is required (no default configured)")
-    return cast(Project, get_client().projects.get(pid))
+    return get_client().projects.get(pid)

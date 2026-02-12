@@ -39,7 +39,7 @@ def build_filters(
     Returns:
         Dictionary with only non-None filter values, ready for API call
     """
-    filters = {}
+    filters: dict[str, Any] = {}
 
     # Add simple filters (None values excluded)
     if state is not None:

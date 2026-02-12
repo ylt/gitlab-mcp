@@ -5,6 +5,20 @@ from pydantic import Field, field_validator, field_serializer
 from gitlab_mcp.models.base import BaseGitLabModel, relative_time, safe_str
 
 
+def format_seconds(seconds: int) -> str:
+    """Convert seconds to human-readable format."""
+    if seconds == 0:
+        return "0m"
+    hours = seconds // 3600
+    minutes = (seconds % 3600) // 60
+    parts: list[str] = []
+    if hours > 0:
+        parts.append(f"{hours}h")
+    if minutes > 0:
+        parts.append(f"{minutes}m")
+    return "".join(parts) if parts else "0m"
+
+
 class IssueSummary(BaseGitLabModel):
     """issue summary."""
 
@@ -121,12 +135,69 @@ class IssueNote(BaseGitLabModel):
 class IssueLink(BaseGitLabModel):
     """Link between two issues."""
 
-    source_issue: int
-    target_issue: int
-    link_type: str  # relates_to, blocks, is_blocked_by
+    id: int
+    type: str = Field(alias="link_type")
+    target_project_id: int
+    target_issue_iid: int
 
-    @field_validator("source_issue", "target_issue", mode="before")
-    @classmethod
-    def extract_issue_iid(cls, v):
-        """Extract iid from issue dict."""
-        return v["iid"] if isinstance(v, dict) else v
+
+class IssueDeleteResult(BaseGitLabModel):
+    """Result of deleting an issue."""
+
+    status: str = Field(description="Deletion status (always 'deleted')")
+    issue_iid: int = Field(description="Issue number that was deleted")
+
+
+class IssueLinkDeleteResult(BaseGitLabModel):
+    """Result of deleting an issue link."""
+
+    status: str = Field(description="Deletion status (always 'deleted')")
+    link_id: int = Field(description="Link ID that was deleted")
+
+
+class RelatedMergeRequest(BaseGitLabModel):
+    """A merge request related to an issue."""
+
+    id: int = Field(description="Merge request ID")
+    iid: int = Field(description="Merge request number within project")
+    title: str = Field(description="MR title")
+    state: str = Field(description="MR state (opened, closed, merged, locked)")
+    url: str = Field(alias="web_url", description="Web URL to view MR")
+
+
+class IssueTimeStats(BaseGitLabModel):
+    """Time tracking statistics for an issue."""
+
+    time_estimate: str = Field(description="Time estimate in human-readable format (e.g., '2h30m')")
+    time_estimate_seconds: int = Field(description="Time estimate in seconds")
+    total_time_spent: str = Field(description="Total time spent in human-readable format")
+    total_time_spent_seconds: int = Field(description="Total time spent in seconds")
+    human_time_estimate: str | None = Field(
+        None, description="Human-readable time estimate from GitLab"
+    )
+    human_total_time_spent: str | None = Field(
+        None, description="Human-readable total time spent from GitLab"
+    )
+
+    @field_serializer("time_estimate")
+    def serialize_time_estimate(self, v: str | int) -> str:
+        """Convert time estimate seconds to human-readable format."""
+        if isinstance(v, str):
+            return v
+        return format_seconds(v)
+
+    @field_serializer("total_time_spent")
+    def serialize_total_time_spent(self, v: str | int) -> str:
+        """Convert total time spent seconds to human-readable format."""
+        if isinstance(v, str):
+            return v
+        return format_seconds(v)
+
+
+class IssueTimeAddResult(BaseGitLabModel):
+    """Result of adding time to an issue."""
+
+    status: str = Field(description="Status (always 'time_added')")
+    duration: str = Field(description="Duration that was added (e.g., '1h30m')")
+    issue_iid: int = Field(description="Issue number")
+    total_time_spent: int = Field(description="Total time spent in seconds after addition")

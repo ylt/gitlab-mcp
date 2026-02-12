@@ -51,7 +51,7 @@ class PipelineSummary(BaseGitLabModel):
         """When last updated (relative)."""
         return relative_time(self.updated_at)
 
-    @field_validator('sha', mode='before')
+    @field_validator("sha", mode="before")
     @classmethod
     def truncate_sha(cls, v):
         """Shorten commit SHA to 8 characters for readability."""
@@ -86,23 +86,30 @@ class JobSummary(BaseGitLabModel):
         """When created (relative)."""
         return relative_time(self.created_at)
 
-    @field_validator('artifacts', mode='before')
+    @field_validator("artifacts", mode="before")
     @classmethod
     def extract_artifacts(cls, v):
         """Extract artifact filenames from artifact objects."""
         if not v:
             return None
         if isinstance(v, list) and len(v) > 0 and isinstance(v[0], dict):
-            return [
-                artifact.get("file_format", artifact.get("filename", ""))
-                for artifact in v
-            ]
+            return [artifact.get("file_format", artifact.get("filename", "")) for artifact in v]
         return v
 
-    @field_serializer('artifacts')
+    @field_serializer("artifacts")
     def serialize_artifacts(self, v: list[str] | None) -> list[str] | None:
         """Remove empty artifact names."""
         if not v:
             return None
         filtered = [a for a in v if a]
         return filtered if filtered else None
+
+
+class JobLogResult(BaseGitLabModel):
+    """Result of retrieving job logs."""
+
+    job_id: int = Field(description="ID of the job")
+    log: str = Field(description="Job log output")
+    truncated: bool = Field(description="Whether the log was truncated")
+    total_lines: int = Field(description="Total number of lines in the log")
+    shown_lines: int = Field(description="Number of lines shown")
