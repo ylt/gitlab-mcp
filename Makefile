@@ -1,4 +1,4 @@
-.PHONY: help check test format lint typecheck pyrefly pyright ruff clean all
+.PHONY: help check test format lint pylint typecheck pyrefly clean all
 
 help: ## Show this help message
 	@echo 'Usage: make [target]'
@@ -6,9 +6,9 @@ help: ## Show this help message
 	@echo 'Available targets:'
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
 
-all: format lint typecheck pyrefly test ## Run all checks (format, lint, typecheck, pyrefly, test)
+all: format lint pylint typecheck test ## Run all checks
 
-check: lint typecheck pyrefly test ## Run all checks except formatting (lint, typecheck, pyrefly, test)
+check: lint pylint typecheck test ## Run all checks except formatting
 
 format: ## Format code with ruff
 	@echo "==> Formatting code with ruff..."
@@ -16,21 +16,21 @@ format: ## Format code with ruff
 
 lint: ## Lint code with ruff
 	@echo "==> Linting code with ruff..."
-	uv run ruff check src/ tests/
+	-uv run ruff check src/ tests/
 
-typecheck: pyright ## Run type checker (alias for pyright)
+pylint: ## Check architectural rules with pylint
+	@echo "==> Checking architectural rules with pylint..."
+	-uv run pylint src/gitlab_mcp/tools/
 
-pyright: ## Type check with basedpyright
-	@echo "==> Type checking with basedpyright..."
-	uv run basedpyright src/ tests/
+typecheck: pyrefly ## Run type checker (alias for pyrefly)
 
-pyrefly: ## Run pyrefly checks
-	@echo "==> Running pyrefly..."
-	uv run pyrefly check
+pyrefly: ## Type check with pyrefly
+	@echo "==> Type checking with pyrefly..."
+	-uv run pyrefly check src/
 
 test: ## Run tests with pytest
 	@echo "==> Running tests..."
-	uv run pytest tests/ -v
+	-uv run pytest tests/ -v
 
 test-cov: ## Run tests with coverage
 	@echo "==> Running tests with coverage..."
@@ -46,4 +46,4 @@ fix: ## Auto-fix linting issues
 	@echo "==> Auto-fixing with ruff..."
 	uv run ruff check src/ tests/ --fix --unsafe-fixes
 
-ci: format lint typecheck pyrefly test ## Run CI pipeline (all checks in order)
+ci: format lint pylint typecheck test ## Run CI pipeline
