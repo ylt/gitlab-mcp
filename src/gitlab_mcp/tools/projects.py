@@ -70,7 +70,7 @@ def list_projects(
         filters["membership"] = True
 
     projects = paginate(client.projects, per_page=per_page, **filters)
-    return [ProjectSummary.from_gitlab(p) for p in projects]
+    return ProjectSummary.from_gitlab(projects)
 
 
 @mcp.tool(
@@ -114,7 +114,7 @@ def list_project_members(
         per_page=per_page,
         **filters,
     )
-    return [ProjectMember.from_gitlab(m) for m in members]
+    return ProjectMember.from_gitlab(members)
 
 
 @mcp.tool(
@@ -154,7 +154,7 @@ def list_group_projects(
         filters["include_subgroups"] = True
 
     projects = paginate(group.projects, per_page=per_page, **filters)
-    return [ProjectSummary.from_gitlab(p) for p in projects]
+    return ProjectSummary.from_gitlab(projects)
 
 
 @mcp.tool(

@@ -45,7 +45,7 @@ def list_releases(
         per_page=per_page,
         **filters,
     )
-    return [ReleaseSummary.from_gitlab(r) for r in releases]
+    return ReleaseSummary.from_gitlab(releases)
 
 
 @mcp.tool(
@@ -263,7 +263,7 @@ def list_release_links(project_id: str, tag_name: str) -> list[ReleaseLink]:
     project = get_project(project_id)
     release = project.releases.get(tag_name)
     links = release.releaselinks.list(get_all=True)
-    return [ReleaseLink.from_gitlab(link) for link in links]
+    return ReleaseLink.from_gitlab(links)
 
 
 @mcp.tool(

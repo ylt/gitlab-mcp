@@ -27,4 +27,4 @@ def list_group_iterations(
         kwargs["state"] = state
 
     iterations = group.iterations.list(**kwargs)
-    return [IterationSummary.from_gitlab(i) for i in iterations]
+    return IterationSummary.from_gitlab(iterations)

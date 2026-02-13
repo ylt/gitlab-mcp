@@ -64,10 +64,7 @@ def list_directory(
     """
     project = get_project(project_id)
     items: Any = project.repository_tree(path=path, ref=ref)
-    result: list[FileSummary] = [
-        FileSummary.from_gitlab(item) for item in items
-    ]
-    return result
+    return FileSummary.from_gitlab(items)
 
 
 @mcp.tool(
@@ -171,7 +168,7 @@ def list_commits(
         kwargs["with_stats"] = True
     commits = project.commits.list(**kwargs)
 
-    return [CommitSummary.from_gitlab(c) for c in commits]
+    return CommitSummary.from_gitlab(commits)
 
 
 @mcp.tool(
@@ -286,7 +283,7 @@ def get_repository_tree(
     """
     project = get_project(project_id)
     items = project.repository_tree(path=path, ref=ref, recursive=recursive)
-    return [FileSummary.from_gitlab(item) for item in items]
+    return FileSummary.from_gitlab(items)
 
 
 @mcp.tool(

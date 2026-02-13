@@ -44,7 +44,7 @@ def list_milestones(
         **filters,
         **sort_params,
     )
-    return [MilestoneSummary.from_gitlab(m) for m in milestones]
+    return MilestoneSummary.from_gitlab(milestones)
 
 
 @mcp.tool(annotations={"title": "Get Milestone", "readOnlyHint": True, "openWorldHint": True})
@@ -196,7 +196,7 @@ def get_milestone_issues(
         **filters,
         **sort_params,
     )
-    return [IssueSummary.from_gitlab(i) for i in issues]
+    return IssueSummary.from_gitlab(issues)
 
 
 @mcp.tool(
@@ -234,7 +234,7 @@ def get_milestone_merge_requests(
         **filters,
         **sort_params,
     )
-    return [MergeRequestSummary.from_gitlab(mr) for mr in mrs]
+    return MergeRequestSummary.from_gitlab(mrs)
 
 
 @mcp.tool(

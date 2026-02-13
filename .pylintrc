@@ -6,7 +6,7 @@ init-hook='import sys; sys.path.append(".")'
 [MESSAGES CONTROL]
 # Only enable our custom checker by default
 disable=all
-enable=mcp-dict-return,mcp-nested-function,mcp-manual-construction
+enable=mcp-dict-return,mcp-nested-function,mcp-manual-construction,mcp-manual-list-comprehension
 
 [FORMAT]
 # Match ruff's line length

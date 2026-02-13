@@ -104,7 +104,7 @@ def list_issues(
         **filters,
     )
 
-    return [IssueSummary.from_gitlab(i) for i in issues]
+    return IssueSummary.from_gitlab(issues)
 
 
 @mcp.tool(
@@ -270,7 +270,7 @@ def my_issues(state: str = "opened", scope: str = "all", limit: int = 20) -> lis
     client = get_client()
     kwargs: dict[str, Any] = {"state": state, "scope": scope, "per_page": limit}
     issues_list: Any = client.issues.list(**kwargs)
-    return [IssueSummary.from_gitlab(i) for i in issues_list]
+    return IssueSummary.from_gitlab(issues_list)
 
 
 @mcp.tool(annotations={"title": "List Issue Links", "readOnlyHint": True, "openWorldHint": True})
@@ -284,7 +284,7 @@ def list_issue_links(project_id: str, issue_iid: int) -> list[IssueLink]:
     project = get_project(project_id)
     issue = project.issues.get(issue_iid)
     links = issue.links.list()
-    return [IssueLink.from_gitlab(link) for link in links]
+    return IssueLink.from_gitlab(links)
 
 
 @mcp.tool(annotations={"title": "Get Issue Link", "readOnlyHint": True, "openWorldHint": True})
@@ -380,7 +380,7 @@ def list_related_merge_requests(project_id: str, issue_iid: int) -> list[Related
     project = get_project(project_id)
     issue = project.issues.get(issue_iid)
     mrs = issue.related_merge_requests()
-    return [RelatedMergeRequest.from_gitlab(mr) for mr in mrs]
+    return RelatedMergeRequest.from_gitlab(mrs)
 
 
 @mcp.tool(

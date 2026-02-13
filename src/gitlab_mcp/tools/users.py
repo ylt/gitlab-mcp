@@ -38,7 +38,7 @@ def get_users(
         per_page=per_page,
         **filters,
     )
-    return [UserSummary.from_gitlab(u) for u in users]
+    return UserSummary.from_gitlab(users)
 
 
 @mcp.tool(
@@ -56,4 +56,4 @@ def list_events(limit: int = 20) -> list[EventSummary]:
     """
     client = get_client()
     events = client.events.list(per_page=limit)
-    return [EventSummary.from_gitlab(e) for e in events]
+    return EventSummary.from_gitlab(events)

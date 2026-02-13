@@ -24,7 +24,7 @@ def list_wiki_pages(
         project.wikis,
         per_page=per_page,
     )
-    return [WikiPageSummary.from_gitlab(p) for p in pages]
+    return WikiPageSummary.from_gitlab(pages)
 
 
 @mcp.tool(annotations={"title": "Get Wiki Page", "readOnlyHint": True, "openWorldHint": True})

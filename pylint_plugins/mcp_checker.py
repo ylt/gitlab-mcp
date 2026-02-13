@@ -29,6 +29,12 @@ class MCPToolChecker(BaseChecker):
             "Use Model.from_gitlab(obj) instead of manual field mapping. "
             "Keep controllers thin - models handle transformation.",
         ),
+        "W9004": (
+            "MCP tool '%s' uses list comprehension with from_gitlab()",
+            "mcp-manual-list-comprehension",
+            "from_gitlab() accepts lists - use Model.from_gitlab(items) instead of "
+            "[Model.from_gitlab(item) for item in items]",
+        ),
     }
 
     def visit_functiondef(self, node: nodes.FunctionDef) -> None:
@@ -57,6 +63,10 @@ class MCPToolChecker(BaseChecker):
         # Check for dict literals in return statements
         if self._returns_dict_literal(node):
             self.add_message("mcp-dict-return", node=node, args=(node.name,))
+
+        # Check for list comprehensions with from_gitlab
+        if self._has_from_gitlab_list_comprehension(node):
+            self.add_message("mcp-manual-list-comprehension", node=node, args=(node.name,))
 
     def _has_mcp_tool_decorator(self, node: nodes.FunctionDef) -> bool:
         """Check if function has @mcp.tool decorator."""
@@ -148,6 +158,24 @@ class MCPToolChecker(BaseChecker):
             for child in node.orelse:
                 if self._check_return_dict(child):
                     return True
+        return False
+
+    def _has_from_gitlab_list_comprehension(self, node: nodes.FunctionDef) -> bool:
+        """Check if function uses list comprehension with from_gitlab."""
+        for child in node.body:
+            if isinstance(child, nodes.Return) and child.value:
+                if self._is_from_gitlab_listcomp(child.value):
+                    return True
+        return False
+
+    def _is_from_gitlab_listcomp(self, node) -> bool:
+        """Check if node is a list comprehension calling from_gitlab."""
+        if isinstance(node, nodes.ListComp):
+            # Check if the element expression calls from_gitlab
+            if isinstance(node.elt, nodes.Call):
+                if isinstance(node.elt.func, nodes.Attribute):
+                    if node.elt.func.attrname == "from_gitlab":
+                        return True
         return False
 
 

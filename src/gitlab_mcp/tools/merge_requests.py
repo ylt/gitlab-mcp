@@ -105,7 +105,7 @@ def list_merge_requests(
         **all_params,
     )
 
-    return [MergeRequestSummary.from_gitlab(mr) for mr in mrs]
+    return MergeRequestSummary.from_gitlab(mrs)
 
 
 @mcp.tool(
@@ -477,7 +477,7 @@ def get_merge_request_notes(
     project = get_project(project_id)
     mr = project.mergerequests.get(mr_iid)
     notes = mr.notes.list(per_page=limit)
-    return [MergeRequestNote.from_gitlab(note) for note in notes]
+    return MergeRequestNote.from_gitlab(notes)
 
 
 @mcp.tool(
@@ -528,7 +528,7 @@ def list_merge_request_diffs(
     mr = project.mergerequests.get(mr_iid)
     diffs = mr.diffs.list(per_page=limit)
 
-    return [MergeRequestDiff.from_gitlab(diff) for diff in diffs]
+    return MergeRequestDiff.from_gitlab(diffs)
 
 
 @mcp.tool(
@@ -548,9 +548,7 @@ def list_merge_request_versions(project_id: str, mr_iid: int) -> list[MergeReque
     project = get_project(project_id)
     mr = project.mergerequests.get(mr_iid)
     versions = mr.versions.list()
-    return [
-        MergeRequestVersion.from_gitlab(version) for version in versions
-    ]
+    return MergeRequestVersion.from_gitlab(versions)
 
 
 @mcp.tool(
@@ -599,4 +597,4 @@ def get_merge_request_diffs(
     mr = project.mergerequests.get(mr_iid)
     diffs = mr.diffs.list(get_all=True)
 
-    return [MergeRequestDiff.from_gitlab(diff) for diff in diffs]
+    return MergeRequestDiff.from_gitlab(diffs)

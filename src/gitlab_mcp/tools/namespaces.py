@@ -42,7 +42,7 @@ def list_namespaces(
         **sort_params,
     )
 
-    return [NamespaceSummary.from_gitlab(ns) for ns in namespaces]
+    return NamespaceSummary.from_gitlab(namespaces)
 
 
 @mcp.tool(

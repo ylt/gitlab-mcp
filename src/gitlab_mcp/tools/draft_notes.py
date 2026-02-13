@@ -29,7 +29,7 @@ def list_draft_notes(project_id: str, mr_iid: int) -> list[DraftNoteSummary]:
     project = get_project(project_id)
     mr = project.mergerequests.get(mr_iid)
     draft_notes = mr.draft_notes.list()
-    return [DraftNoteSummary.from_gitlab(n) for n in draft_notes]
+    return DraftNoteSummary.from_gitlab(draft_notes)
 
 
 @mcp.tool(

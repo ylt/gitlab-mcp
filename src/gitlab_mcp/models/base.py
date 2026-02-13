@@ -1,6 +1,7 @@
 """Base model classes and shared utilities."""
 
 from datetime import datetime, timezone
+from typing import overload
 
 from gitlab.base import RESTObject
 from pydantic import BaseModel, ConfigDict, field_validator
@@ -38,30 +39,39 @@ class BaseGitLabModel(BaseModel):
             return None
         return v
 
+    @overload
     @classmethod
-    def from_gitlab(cls, obj: RESTObject) -> Self:
-        """Transform GitLab API object to model instance.
+    def from_gitlab(cls, obj: RESTObject) -> Self: ...
+
+    @overload
+    @classmethod
+    def from_gitlab(cls, obj: list[RESTObject]) -> list[Self]: ...
+
+    @classmethod
+    def from_gitlab(cls, obj: RESTObject | list[RESTObject]) -> Self | list[Self]:
+        """Transform GitLab API object(s) to model instance(s).
 
         IMPORTANT: This method expects GitLab RESTObject instances ONLY.
         Plain dicts are NOT allowed - use model_validate() for dicts.
         Runtime enforcement prevents dict usage.
 
-        Type hint is Any to avoid python-gitlab TypeVar issues with type checkers,
-        but runtime check enforces RESTObject requirement.
-
         Args:
-            obj: GitLab API RESTObject (e.g., from project.issues.get())
+            obj: GitLab API RESTObject or list of RESTObjects
 
         Returns:
-            Model instance with fields populated from obj
+            Model instance or list of instances
 
         Raises:
             TypeError: If obj is a plain dict instead of a RESTObject
 
         Examples:
-            # ✅ Correct - GitLab API object
+            # ✅ Single object
             issue = project.issues.get(1)
             summary = IssueSummary.from_gitlab(issue)
+
+            # ✅ List of objects
+            issues = project.issues.list()
+            summaries = IssueSummary.from_gitlab(issues)
 
             # ❌ Wrong - plain dict (raises TypeError)
             summary = IssueSummary.from_gitlab({"iid": 1})
@@ -69,11 +79,17 @@ class BaseGitLabModel(BaseModel):
             # ✅ For dicts, use model_validate
             summary = IssueSummary.model_validate({"iid": 1})
         """
+        # Handle list of objects
+        if isinstance(obj, list):
+            return [cls.from_gitlab(item) for item in obj]
+
+        # Reject plain dicts
         if isinstance(obj, dict) and not hasattr(obj, '__dict__'):
             raise TypeError(
                 f"from_gitlab() expects a GitLab RESTObject, not a plain dict. "
                 f"Use {cls.__name__}.model_validate() for dict construction."
             )
+
         return cls.model_validate(obj, from_attributes=True)
 
 

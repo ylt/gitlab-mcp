@@ -34,7 +34,7 @@ def list_labels(
         per_page=per_page,
         **filters,
     )
-    return [LabelSummary.from_gitlab(label) for label in labels]
+    return LabelSummary.from_gitlab(labels)
 
 
 @mcp.tool(

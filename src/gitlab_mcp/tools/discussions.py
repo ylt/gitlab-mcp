@@ -32,7 +32,7 @@ def mr_discussions(
     project = get_project(project_id)
     mr = project.mergerequests.get(mr_iid)
     discussions = paginate(mr.discussions, per_page=per_page)
-    return [DiscussionSummary.from_gitlab(d) for d in discussions]
+    return DiscussionSummary.from_gitlab(discussions)
 
 
 @mcp.tool(annotations={"title": "Issue Discussions", "readOnlyHint": True, "openWorldHint": True})
@@ -51,7 +51,7 @@ def list_issue_discussions(
     project = get_project(project_id)
     issue = project.issues.get(issue_iid)
     discussions = paginate(issue.discussions, per_page=per_page)
-    return [DiscussionSummary.from_gitlab(d) for d in discussions]
+    return DiscussionSummary.from_gitlab(discussions)
 
 
 @mcp.tool(

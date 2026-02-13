@@ -56,7 +56,7 @@ def list_pipelines(
         **filters,
     )
 
-    return [PipelineSummary.from_gitlab(p) for p in pipelines]
+    return PipelineSummary.from_gitlab(pipelines)
 
 
 @mcp.tool(
@@ -214,7 +214,7 @@ def list_pipeline_jobs(
         **filters,
     )
 
-    return [JobSummary.from_gitlab(j) for j in jobs]
+    return JobSummary.from_gitlab(jobs)
 
 
 @mcp.tool(
@@ -423,4 +423,4 @@ def list_pipeline_trigger_jobs(
 
     # Filter for jobs triggered by pipeline triggers (exclude manual/scheduled jobs)
     # Include all jobs in pipeline for now; can be filtered by status if needed
-    return [JobSummary.from_gitlab(job) for job in jobs]
+    return JobSummary.from_gitlab(jobs)
