@@ -1,7 +1,5 @@
 """Tests for project models."""
 
-from datetime import datetime, timezone
-from unittest.mock import MagicMock
 
 
 from gitlab_mcp.models.projects import ProjectSummary

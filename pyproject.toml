@@ -35,6 +35,10 @@ packages = ["src/gitlab_mcp"]
 line-length = 100
 target-version = "py311"
 
+[tool.pyright]
+stubPath = "stubs"
+typeCheckingMode = "basic"
+
 [tool.basedpyright]
 typeCheckingMode = "standard"
 stubPath = "stubs"

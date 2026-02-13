@@ -1,6 +1,5 @@
 """Tests for pipeline and job models."""
 
-from datetime import datetime
 from unittest.mock import Mock
 from gitlab_mcp.models.pipelines import PipelineSummary, JobSummary
 
