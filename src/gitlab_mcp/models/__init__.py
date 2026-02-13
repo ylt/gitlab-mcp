@@ -22,7 +22,6 @@ from gitlab_mcp.models.issues import (
     IssueLinkDeleteResult,
     RelatedMergeRequest,
     IssueTimeStats,
-    IssueTimeAddResult,
 )
 from gitlab_mcp.models.repository import (
     FileSummary,
@@ -93,7 +92,6 @@ __all__ = [
     "IssueLinkDeleteResult",
     "RelatedMergeRequest",
     "IssueTimeStats",
-    "IssueTimeAddResult",
     # Repository
     "FileSummary",
     "FileContents",

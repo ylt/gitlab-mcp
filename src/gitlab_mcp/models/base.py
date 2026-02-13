@@ -1,10 +1,10 @@
 """Base model classes and shared utilities."""
 
 from datetime import datetime, timezone
-from typing import overload
+from typing import Annotated, overload
 
 from gitlab.base import RESTObject
-from pydantic import BaseModel, ConfigDict, field_validator
+from pydantic import BaseModel, ConfigDict, PlainSerializer, field_validator
 
 try:
     from typing import Self
@@ -93,121 +93,91 @@ class BaseGitLabModel(BaseModel):
         return cls.model_validate(obj, from_attributes=True)
 
 
-def relative_time(dt: datetime | str | None, locale: str = "en") -> str:
-    """Format datetime as human-readable relative time.
-
-    Handles both past and future dates with locale support for time units.
+def relative_time(dt: datetime | str | None) -> str:
+    """Format datetime as human-readable relative time (English only).
 
     Args:
         dt: DateTime object, ISO string, or None
-        locale: Language locale ("en", "es", "fr", "de"). Defaults to "en".
 
-    Examples: "2 hours ago", "3 days in the future", "just now"
+    Returns:
+        Relative time string like "2 hours ago", "just now"
+
+    Examples:
+        >>> relative_time("2024-01-15T10:30:00Z")
+        "2 hours ago"
     """
     if dt is None:
         return "unknown"
 
     if isinstance(dt, str):
-        # Handle ISO format with Z suffix
         dt = datetime.fromisoformat(dt.replace("Z", "+00:00"))
 
-    # Ensure timezone-aware
     if dt.tzinfo is None:
         dt = dt.replace(tzinfo=timezone.utc)
 
     now = datetime.now(timezone.utc)
-    diff = now - dt
-    seconds = diff.total_seconds()
+    seconds = (now - dt).total_seconds()
 
-    # Locale-specific time unit translations
-    locales = {
-        "en": {
-            "just_now": "just now",
-            "minute_singular": "minute ago",
-            "minute_plural": "minutes ago",
-            "hour_singular": "hour ago",
-            "hour_plural": "hours ago",
-            "day_singular": "day ago",
-            "day_plural": "days ago",
-            "week_singular": "week ago",
-            "week_plural": "weeks ago",
-            "month_singular": "month ago",
-            "month_plural": "months ago",
-            "in_future_singular": "in the future",
-            "in_future_plural": "in the future",
-        },
-        "es": {
-            "just_now": "justo ahora",
-            "minute_singular": "hace un minuto",
-            "minute_plural": "hace {n} minutos",
-            "hour_singular": "hace una hora",
-            "hour_plural": "hace {n} horas",
-            "day_singular": "hace un día",
-            "day_plural": "hace {n} días",
-            "week_singular": "hace una semana",
-            "week_plural": "hace {n} semanas",
-            "month_singular": "hace un mes",
-            "month_plural": "hace {n} meses",
-            "in_future_singular": "en el futuro",
-            "in_future_plural": "en el futuro",
-        },
-        "fr": {
-            "just_now": "à l'instant",
-            "minute_singular": "il y a une minute",
-            "minute_plural": "il y a {n} minutes",
-            "hour_singular": "il y a une heure",
-            "hour_plural": "il y a {n} heures",
-            "day_singular": "il y a un jour",
-            "day_plural": "il y a {n} jours",
-            "week_singular": "il y a une semaine",
-            "week_plural": "il y a {n} semaines",
-            "month_singular": "il y a un mois",
-            "month_plural": "il y a {n} mois",
-            "in_future_singular": "dans le futur",
-            "in_future_plural": "dans le futur",
-        },
-        "de": {
-            "just_now": "gerade eben",
-            "minute_singular": "vor einer Minute",
-            "minute_plural": "vor {n} Minuten",
-            "hour_singular": "vor einer Stunde",
-            "hour_plural": "vor {n} Stunden",
-            "day_singular": "vor einem Tag",
-            "day_plural": "vor {n} Tagen",
-            "week_singular": "vor einer Woche",
-            "week_plural": "vor {n} Wochen",
-            "month_singular": "vor einem Monat",
-            "month_plural": "vor {n} Monaten",
-            "in_future_singular": "in der Zukunft",
-            "in_future_plural": "in der Zukunft",
-        },
-    }
-
-    loc = locales.get(locale, locales["en"])
-
-    # Handle future dates
     if seconds < 0:
-        return loc["in_future_singular"]
-
-    if seconds < 60:
-        return loc["just_now"]
+        return "in the future"
+    elif seconds < 60:
+        return "just now"
     elif seconds < 3600:
         mins = int(seconds / 60)
-        key = "minute_singular" if mins == 1 else "minute_plural"
-        return loc[key].format(n=mins) if "{n}" in loc[key] else loc[key]
+        return f"{mins} minute ago" if mins == 1 else f"{mins} minutes ago"
     elif seconds < 86400:
         hours = int(seconds / 3600)
-        key = "hour_singular" if hours == 1 else "hour_plural"
-        return loc[key].format(n=hours) if "{n}" in loc[key] else loc[key]
+        return f"{hours} hour ago" if hours == 1 else f"{hours} hours ago"
     elif seconds < 604800:
         days = int(seconds / 86400)
-        key = "day_singular" if days == 1 else "day_plural"
-        return loc[key].format(n=days) if "{n}" in loc[key] else loc[key]
+        return f"{days} day ago" if days == 1 else f"{days} days ago"
     elif seconds < 2592000:
         weeks = int(seconds / 604800)
-        key = "week_singular" if weeks == 1 else "week_plural"
-        return loc[key].format(n=weeks) if "{n}" in loc[key] else loc[key]
+        return f"{weeks} week ago" if weeks == 1 else f"{weeks} weeks ago"
     else:
         months = int(seconds / 2592000)
-        key = "month_singular" if months == 1 else "month_plural"
-        return loc[key].format(n=months) if "{n}" in loc[key] else loc[key]
+        return f"{months} month ago" if months == 1 else f"{months} months ago"
+
+
+def format_timestamp_with_relative(dt: datetime | str | None) -> str:
+    """Format timestamp as 'relative time (ISO8601)'.
+
+    Args:
+        dt: DateTime object, ISO string, or None
+
+    Returns:
+        Combined format like "2 hours ago (2024-01-15T10:30:00Z)"
+
+    Examples:
+        >>> format_timestamp_with_relative("2024-01-15T10:30:00Z")
+        "2 hours ago (2024-01-15T10:30:00Z)"
+    """
+    if dt is None:
+        return "unknown"
+
+    if isinstance(dt, str):
+        iso_str = dt
+        dt_obj = datetime.fromisoformat(dt.replace("Z", "+00:00"))
+    else:
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        iso_str = dt.isoformat().replace("+00:00", "Z")
+        dt_obj = dt
+
+    relative = relative_time(dt_obj)
+    return f"{relative} ({iso_str})"
+
+
+# Type alias for timestamp fields: formats as "relative (ISO8601)"
+RelativeTime = Annotated[
+    str,
+    PlainSerializer(lambda v: format_timestamp_with_relative(v), return_type=str),
+]
+
+# Type alias for optional timestamp fields
+RelativeTimeOptional = Annotated[
+    str | None,
+    PlainSerializer(
+        lambda v: format_timestamp_with_relative(v) if v else None, return_type=str | None
+    ),
+]

@@ -192,12 +192,3 @@ class IssueTimeStats(BaseGitLabModel):
         if isinstance(v, str):
             return v
         return format_seconds(v)
-
-
-class IssueTimeAddResult(BaseGitLabModel):
-    """Result of adding time to an issue."""
-
-    status: str = Field(description="Status (always 'time_added')")
-    duration: str = Field(description="Duration that was added (e.g., '1h30m')")
-    issue_iid: int = Field(description="Issue number")
-    total_time_spent: int = Field(description="Total time spent in seconds after addition")

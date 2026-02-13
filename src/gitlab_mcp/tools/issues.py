@@ -11,7 +11,6 @@ from gitlab_mcp.models import (
     IssueLinkDeleteResult,
     RelatedMergeRequest,
     IssueTimeStats,
-    IssueTimeAddResult,
 )
 from gitlab_mcp.utils.pagination import paginate
 from gitlab_mcp.utils.query import build_filters, build_sort
@@ -392,8 +391,10 @@ def list_related_merge_requests(project_id: str, issue_iid: int) -> list[Related
         "openWorldHint": True,
     }
 )
-def add_time_spent(project_id: str, issue_iid: int, duration: str) -> IssueTimeAddResult:
+def add_time_spent(project_id: str, issue_iid: int, duration: str) -> IssueTimeStats:
     """Add time spent on an issue.
+
+    Returns the updated time tracking statistics after adding the duration.
 
     Args:
         project_id: Project ID or path
@@ -403,12 +404,8 @@ def add_time_spent(project_id: str, issue_iid: int, duration: str) -> IssueTimeA
     project = get_project(project_id)
     issue = project.issues.get(issue_iid)
     issue.add_spent_time(duration)
-    return IssueTimeAddResult.model_validate({
-        "status": "time_added",
-        "duration": duration,
-        "issue_iid": issue_iid,
-        "total_time_spent": issue.time_stats().get("total_time_spent", 0),
-    })
+    stats = issue.time_stats()
+    return IssueTimeStats.from_gitlab(stats)  # type: ignore[arg-type]
 
 
 @mcp.tool(annotations={"title": "Time Stats", "readOnlyHint": True, "openWorldHint": True})
