@@ -1,8 +1,8 @@
 """Miscellaneous models for namespaces, users, iterations."""
 
 from typing import Literal
-from pydantic import Field, field_serializer, computed_field, field_validator
-from gitlab_mcp.models.base import BaseGitLabModel, relative_time, safe_str
+from pydantic import Field, computed_field, field_validator
+from gitlab_mcp.models.base import BaseGitLabModel, relative_time, SafeString, safe_str
 
 
 class NamespaceSummary(BaseGitLabModel):
@@ -74,17 +74,12 @@ class IterationSummary(BaseGitLabModel):
 
     id: int
     title: str
-    description: str | None = None
+    description: SafeString = None
     state: str
     start_date: str | None = None
     due_date: str | None = None
     web_url: str
     created_at: str = Field(exclude=True)
-
-    @field_serializer("description")
-    def serialize_description(self, v: str | None) -> str:
-        """Clean description (None → empty string)."""
-        return safe_str(v)
 
     @computed_field
     @property

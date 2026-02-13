@@ -4,12 +4,15 @@ from typing import Annotated, Literal, Any
 from pydantic import (
     Field,
     field_validator,
-    field_serializer,
     computed_field,
     model_validator,
     BeforeValidator,
 )
-from gitlab_mcp.models.base import BaseGitLabModel, relative_time, safe_str
+from gitlab_mcp.models.base import (
+    BaseGitLabModel,
+    RelativeTime,
+    SafeString,
+)
 
 
 def ensure_string(v: str | None) -> str:
@@ -25,14 +28,14 @@ class MergeRequestSummary(BaseGitLabModel):
 
     iid: int = Field(description="MR number within the project")
     title: str
-    description: str = ""
+    description: SafeString = ""
     state: Literal["opened", "closed", "merged", "locked"]
     author: str = Field(description="Username of the author")
     source_branch: str
     target_branch: str
     url: str = Field(alias="web_url", description="Web URL to view the MR")
-    created: str = Field(alias="created_at", description="When created (relative)")
-    updated: str = Field(alias="updated_at", description="When last updated (relative)")
+    created: RelativeTime = Field(alias="created_at", description="When created (relative)")
+    updated: RelativeTime = Field(alias="updated_at", description="When last updated (relative)")
     reviewers: list[str] = Field(default_factory=list)
 
     # Fields for computed properties (extracted in model_validator)
@@ -128,16 +131,6 @@ class MergeRequestSummary(BaseGitLabModel):
         ready_status = "ready" if self.ready_to_merge else "not ready"
         return f"{self.state} MR by {self.author} - {ready_status} - {pipeline_status}"
 
-    @field_serializer("description")
-    def serialize_description(self, v: str) -> str:
-        """Clean null descriptions."""
-        return safe_str(v)
-
-    @field_serializer("created", "updated")
-    def serialize_datetime(self, v: str) -> str:
-        """Format as relative time."""
-        return relative_time(v)
-
 
 class MergeRequestDiff(BaseGitLabModel):
     """Single file change in a merge request."""
@@ -199,7 +192,7 @@ class MergeRequestPipeline(BaseGitLabModel):
     url: str = Field(alias="web_url", description="Web URL to view the pipeline")
     ref: str = Field(description="Git ref (branch or tag)")
     sha: str = Field(description="Commit SHA")
-    created: str = Field(alias="created_at", description="When created (relative)")
+    created: RelativeTime = Field(alias="created_at", description="When created (relative)")
     stages: list[str] = Field(default_factory=list, description="Pipeline stages")
     failed_jobs: list[str] = Field(default_factory=list, description="Names of failed jobs")
 
@@ -210,11 +203,6 @@ class MergeRequestPipeline(BaseGitLabModel):
         if not v or not isinstance(v, list):
             return []
         return [j.get("name", "unknown") if isinstance(j, dict) else str(j) for j in v]
-
-    @field_serializer("created")
-    def serialize_created(self, v: str) -> str:
-        """Format as relative time."""
-        return relative_time(v)
 
 
 class ApprovalResult(BaseGitLabModel):

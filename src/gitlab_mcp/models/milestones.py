@@ -1,8 +1,8 @@
 """Milestone models."""
 
 from typing import Literal
-from pydantic import Field, field_serializer
-from gitlab_mcp.models.base import BaseGitLabModel, relative_time
+from pydantic import Field
+from gitlab_mcp.models.base import BaseGitLabModel, RelativeTime
 
 
 class MilestoneSummary(BaseGitLabModel):
@@ -15,13 +15,8 @@ class MilestoneSummary(BaseGitLabModel):
     due_date: str | None = Field(None, description="Due date (YYYY-MM-DD)")
     start_date: str | None = Field(None, description="Start date (YYYY-MM-DD)")
     url: str = Field(description="Web URL", alias="web_url")
-    created: str = Field(description="When created (relative)", alias="created_at")
-    updated: str = Field(description="When last updated (relative)", alias="updated_at")
-
-    @field_serializer("created", "updated")
-    def serialize_datetime(self, v: str) -> str:
-        """Format as relative time for AI consumption."""
-        return relative_time(v)
+    created: RelativeTime = Field(description="When created (relative)", alias="created_at")
+    updated: RelativeTime = Field(description="When last updated (relative)", alias="updated_at")
 
 
 class MilestoneDeleteResult(BaseGitLabModel):
@@ -51,11 +46,6 @@ class MilestonePromoteResult(BaseGitLabModel):
     due_date: str | None = Field(None, description="Due date (YYYY-MM-DD)")
     start_date: str | None = Field(None, description="Start date (YYYY-MM-DD)")
     url: str = Field(description="Web URL", alias="web_url")
-    created: str = Field(description="When created (relative)", alias="created_at")
-    updated: str = Field(description="When last updated (relative)", alias="updated_at")
+    created: RelativeTime = Field(description="When created (relative)", alias="created_at")
+    updated: RelativeTime = Field(description="When last updated (relative)", alias="updated_at")
     promoted: bool = Field(description="Whether milestone was promoted to group level")
-
-    @field_serializer("created", "updated")
-    def serialize_datetime(self, v: str) -> str:
-        """Format as relative time for AI consumption."""
-        return relative_time(v)

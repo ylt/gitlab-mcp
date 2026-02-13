@@ -181,3 +181,9 @@ RelativeTimeOptional = Annotated[
         lambda v: format_timestamp_with_relative(v) if v else None, return_type=str | None
     ),
 ]
+
+# Type alias for string fields that should convert None to empty string
+SafeString = Annotated[
+    str | None,
+    PlainSerializer(lambda v: safe_str(v), return_type=str),
+]

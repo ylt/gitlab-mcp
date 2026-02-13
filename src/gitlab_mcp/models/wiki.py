@@ -1,8 +1,8 @@
 """Wiki models."""
 
 from typing import Literal, Any, Annotated
-from pydantic import Field, field_validator, field_serializer, BeforeValidator
-from gitlab_mcp.models.base import BaseGitLabModel, relative_time, safe_str
+from pydantic import Field, field_validator, BeforeValidator, PlainSerializer
+from gitlab_mcp.models.base import BaseGitLabModel, relative_time, safe_str, RelativeTimeOptional
 
 
 def ensure_string(v: Any) -> str:
@@ -24,8 +24,8 @@ class WikiPageSummary(BaseGitLabModel):
     slug: str = Field(description="URL-safe page identifier")
     title: str
     format: Literal["markdown", "rdoc", "asciidoc"] = "markdown"
-    created: str | None = Field(None, alias="created_at", description="When created (relative)")
-    updated: str | None = Field(
+    created: RelativeTimeOptional = Field(None, alias="created_at", description="When created (relative)")
+    updated: RelativeTimeOptional = Field(
         None, alias="updated_at", description="When last updated (relative)"
     )
 
@@ -40,11 +40,6 @@ class WikiPageSummary(BaseGitLabModel):
             return v
         # Convert datetime object to relative time
         return relative_time(v)
-
-    @field_serializer("created", "updated")
-    def serialize_datetime(self, v: str | None) -> str | None:
-        """Pass through already-formatted relative time."""
-        return v
 
 
 class WikiPageDetail(BaseGitLabModel):
@@ -52,10 +47,10 @@ class WikiPageDetail(BaseGitLabModel):
 
     slug: str = Field(description="URL-safe page identifier")
     title: str
-    content: Annotated[str, BeforeValidator(ensure_string)]
+    content: Annotated[str, BeforeValidator(ensure_string), PlainSerializer(safe_str, return_type=str)]
     format: Literal["markdown", "rdoc", "asciidoc"] = "markdown"
-    created: str | None = Field(None, alias="created_at", description="When created (relative)")
-    updated: str | None = Field(
+    created: RelativeTimeOptional = Field(None, alias="created_at", description="When created (relative)")
+    updated: RelativeTimeOptional = Field(
         None, alias="updated_at", description="When last updated (relative)"
     )
 
@@ -70,16 +65,6 @@ class WikiPageDetail(BaseGitLabModel):
             return v
         # Convert datetime object to relative time
         return relative_time(v)
-
-    @field_serializer("content")
-    def serialize_content(self, v: str) -> str:
-        """Format content for output."""
-        return safe_str(v)
-
-    @field_serializer("created", "updated")
-    def serialize_datetime(self, v: str | None) -> str | None:
-        """Pass through already-formatted relative time."""
-        return v
 
 
 class WikiPageDeleteResult(BaseGitLabModel):

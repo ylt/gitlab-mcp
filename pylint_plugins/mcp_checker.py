@@ -35,10 +35,20 @@ class MCPToolChecker(BaseChecker):
             "from_gitlab() accepts lists - use Model.from_gitlab(items) instead of "
             "[Model.from_gitlab(item) for item in items]",
         ),
+        "W9005": (
+            "Field serializer '%s' just delegates to function - use type alias instead",
+            "simple-field-serializer",
+            "Replace simple @field_serializer with type alias. "
+            "Example: Use RelativeTime type alias instead of @field_serializer that calls relative_time()",
+        ),
     }
 
     def visit_functiondef(self, node: nodes.FunctionDef) -> None:
         """Check function definitions for MCP tool violations."""
+        # Check for simple field serializers in models
+        if self._has_field_serializer_decorator(node) and self._is_simple_delegation(node):
+            self.add_message("simple-field-serializer", node=node, args=(node.name,))
+
         # Check if function has @mcp.tool decorator
         if not self._has_mcp_tool_decorator(node):
             return
@@ -176,6 +186,49 @@ class MCPToolChecker(BaseChecker):
                 if isinstance(node.elt.func, nodes.Attribute):
                     if node.elt.func.attrname == "from_gitlab":
                         return True
+        return False
+
+    def _has_field_serializer_decorator(self, node: nodes.FunctionDef) -> bool:
+        """Check if function has @field_serializer decorator."""
+        if not node.decorators:
+            return False
+
+        for decorator in node.decorators.nodes:
+            # Handle @field_serializer(...) call
+            if isinstance(decorator, nodes.Call):
+                if isinstance(decorator.func, nodes.Name):
+                    if decorator.func.name == "field_serializer":
+                        return True
+        return False
+
+    def _is_simple_delegation(self, node: nodes.FunctionDef) -> bool:
+        """Check if method body is just a simple function call delegation.
+
+        Matches patterns like:
+        - return func(v)
+        - return func(v) if v else None
+        """
+        if len(node.body) != 1:
+            return False
+
+        stmt = node.body[0]
+        if not isinstance(stmt, nodes.Return):
+            return False
+
+        # Pattern: return func(v) if v else None
+        if isinstance(stmt.value, nodes.IfExp):
+            # Check if test is just a name (the parameter)
+            if isinstance(stmt.value.test, nodes.Name):
+                # Check if body is a simple function call
+                if isinstance(stmt.value.body, nodes.Call):
+                    return True
+
+        # Pattern: return func(v)
+        if isinstance(stmt.value, nodes.Call):
+            # Check if it's a simple function call with one argument
+            if len(stmt.value.args) == 1:
+                return True
+
         return False
 
 
