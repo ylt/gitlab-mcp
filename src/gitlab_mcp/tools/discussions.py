@@ -1,6 +1,7 @@
 """Discussion and note tools for merge requests and issues."""
 
 import logging
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from gitlab_mcp.server import mcp
@@ -27,13 +28,40 @@ def _truncate_note(note: NoteSummary) -> NoteSummary:
     return note
 
 
+def _parse_newer_than(newer_than: str) -> datetime:
+    """Parse a relative time string like '1h', '2d', '30m' into a cutoff datetime."""
+    units = {"m": 60, "h": 3600, "d": 86400, "w": 604800}
+    suffix = newer_than[-1].lower()
+    if suffix not in units:
+        raise ValueError(f"Invalid time unit '{suffix}'. Use m (minutes), h (hours), d (days), w (weeks)")
+    value = int(newer_than[:-1])
+    return datetime.now(timezone.utc) - timedelta(seconds=value * units[suffix])
+
+
+def _note_created_at(note: NoteSummary) -> datetime | None:
+    """Parse the raw created_at string from a note."""
+    if not note.created_at:
+        return None
+    # created_at is raw ISO string before serialization
+    raw = note.created_at
+    if isinstance(raw, str) and "(" in raw:
+        # Already serialized as "2 hours ago (2026-03-18T10:30:00Z)"
+        raw = raw.split("(")[-1].rstrip(")")
+    try:
+        return datetime.fromisoformat(raw.replace("Z", "+00:00"))
+    except (ValueError, AttributeError):
+        return None
+
+
 def _filter_discussions(
     discussions: list[DiscussionSummary],
     include_system: bool,
-    state: str = "all",
+    newer_than: str | None = None,
     include_all_notes: bool = False,
 ) -> list[DiscussionSummary]:
-    """Filter discussions by system notes, resolution state, and collapse notes."""
+    """Filter discussions by system notes, recency, and collapse notes."""
+    cutoff = _parse_newer_than(newer_than) if newer_than else None
+
     result = []
     for d in discussions:
         notes = d.notes
@@ -41,17 +69,25 @@ def _filter_discussions(
         if not include_system:
             notes = [n for n in notes if not n.system]
 
-        if state == "unresolved":
-            resolvable = [n for n in notes if n.resolvable is True]
-            if not resolvable or all(n.resolved is True for n in resolvable):
-                continue
-        elif state == "resolved":
-            resolvable = [n for n in notes if n.resolvable is True]
-            if not resolvable or not all(n.resolved is True for n in resolvable):
+        if cutoff:
+            # Keep discussion if any note is newer than cutoff
+            has_recent = any(
+                (ts := _note_created_at(n)) and ts >= cutoff for n in notes
+            )
+            if not has_recent:
                 continue
 
         if not notes:
             continue
+
+        # Compute state from all notes before collapsing
+        resolvable = [n for n in notes if n.resolvable is True]
+        if not resolvable:
+            d.state = "comment"
+        elif all(n.resolved is True for n in resolvable):
+            d.state = "resolved"
+        else:
+            d.state = "unresolved"
 
         d.note_count = len(notes)
         if include_all_notes:
@@ -80,15 +116,15 @@ def mr_discussions(
     mr_iid: int,
     per_page: int = 20,
     include_system: bool = False,
-    state: str = "all",
+    newer_than: str | None = None,
     include_all_notes: bool = False,
     raw: bool = False,
 ) -> list[DiscussionSummary] | list[DiscussionDetail]:
     """List discussions/threads on a merge request.
 
-    By default shows only the last note per thread with a note_count.
-    Note bodies are cleaned (HTML comments stripped, <details> blocks
-    collapsed) and system notes are excluded. Use raw=True for full
+    By default shows first + last note per thread (truncated) with a
+    note_count. Note bodies are cleaned (HTML comments stripped, <details>
+    blocks collapsed) and system notes are excluded. Use raw=True for full
     unstripped markdown. To fetch a single discussion with full content,
     use get_mr_discussion instead.
 
@@ -97,8 +133,8 @@ def mr_discussions(
         mr_iid: Merge request number
         per_page: Items per page (default 20, max 100)
         include_system: Include system-generated notes (default false)
-        state: Filter by resolution: "all", "unresolved", or "resolved"
-        include_all_notes: Show all notes per thread (default false, shows last only)
+        newer_than: Only include discussions with activity newer than this (e.g. "1h", "2d", "30m", "1w")
+        include_all_notes: Show all notes per thread (default false, shows first+last only)
         raw: Return full unstripped markdown bodies (default false)
     """
     project = get_project(project_id)
@@ -107,7 +143,7 @@ def mr_discussions(
     if raw:
         return DiscussionDetail.from_gitlab(discussions)
     result = DiscussionSummary.from_gitlab(discussions)
-    return _filter_discussions(result, include_system, state, include_all_notes)
+    return _filter_discussions(result, include_system, newer_than, include_all_notes)
 
 
 @mcp.tool(annotations={"title": "Issue Discussions", "readOnlyHint": True, "openWorldHint": True})
@@ -116,14 +152,14 @@ def list_issue_discussions(
     issue_iid: int,
     per_page: int = 20,
     include_system: bool = False,
-    state: str = "all",
+    newer_than: str | None = None,
     include_all_notes: bool = False,
     raw: bool = False,
 ) -> list[DiscussionSummary] | list[DiscussionDetail]:
     """List discussions/threads on an issue.
 
-    By default shows only the last note per thread with a note_count.
-    Note bodies are cleaned and system notes are excluded.
+    By default shows first + last note per thread (truncated) with a
+    note_count. Note bodies are cleaned and system notes are excluded.
     Use raw=True for full unstripped markdown.
 
     Args:
@@ -131,8 +167,8 @@ def list_issue_discussions(
         issue_iid: Issue number
         per_page: Items per page (default 20, max 100)
         include_system: Include system-generated notes (default false)
-        state: Filter by resolution: "all", "unresolved", or "resolved"
-        include_all_notes: Show all notes per thread (default false, shows last only)
+        newer_than: Only include discussions with activity newer than this (e.g. "1h", "2d", "30m", "1w")
+        include_all_notes: Show all notes per thread (default false, shows first+last only)
         raw: Return full unstripped markdown bodies (default false)
     """
     project = get_project(project_id)
@@ -141,7 +177,7 @@ def list_issue_discussions(
     if raw:
         return DiscussionDetail.from_gitlab(discussions)
     result = DiscussionSummary.from_gitlab(discussions)
-    return _filter_discussions(result, include_system, state, include_all_notes)
+    return _filter_discussions(result, include_system, newer_than, include_all_notes)
 
 
 @mcp.tool(annotations={"title": "Get MR Discussion", "readOnlyHint": True, "openWorldHint": True})

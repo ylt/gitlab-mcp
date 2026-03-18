@@ -1,7 +1,6 @@
 """Discussion and note models."""
 
-from pydantic import Field
-from pydantic import model_validator
+from pydantic import Field, model_validator
 
 from gitlab_mcp.models.base import (
     BaseGitLabModel,
@@ -23,8 +22,8 @@ class NoteSummary(BaseGitLabModel):
         default=None, description="When last updated (ISO timestamp)"
     )
     system: bool = Field(default=False, description="True if this is a system-generated note")
-    resolvable: bool | None = Field(default=False, description="True if this note can be resolved")
-    resolved: bool | None = Field(default=False, description="True if this note is resolved")
+    resolvable: bool | None = Field(default=False, description="True if this note can be resolved", exclude=True)
+    resolved: bool | None = Field(default=False, description="True if this note is resolved", exclude=True)
 
     @model_validator(mode="before")
     @classmethod
@@ -97,9 +96,10 @@ class DiscussionSummary(BaseGitLabModel):
     """
 
     id: str = Field(description="Discussion ID")
+    state: str = Field(default="comment", description="Discussion state: resolved, unresolved, or comment")
     note_count: int = Field(default=0, description="Total number of notes in discussion")
     notes: list[NoteSummary] = Field(
-        default_factory=list, description="Notes (last note only by default, all if requested)"
+        default_factory=list, description="Notes (first+last only by default, all if requested)"
     )
     individual_note: bool = Field(default=False, description="True if single comment, not a thread")
 
