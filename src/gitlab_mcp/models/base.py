@@ -190,20 +190,32 @@ SafeString = Annotated[
 ]
 
 _HTML_COMMENT_RE = re.compile(r"<!--.*?-->", re.DOTALL)
+_DETAILS_BLOCK_RE = re.compile(
+    r"<details>\s*<summary>(.*?)</summary>.*?</details>", re.DOTALL
+)
+_DETAILS_NO_SUMMARY_RE = re.compile(r"<details>.*?</details>", re.DOTALL)
 
 
-def strip_html_comments(text: str | None) -> str:
-    """Remove HTML comments from text and clean up resulting whitespace."""
+def _replace_details(match: re.Match) -> str:
+    """Replace <details> block with HTML comment keeping summary text."""
+    summary = match.group(1).strip()
+    return f"<!-- collapsed: {summary} -->"
+
+
+def clean_note_body(text: str | None) -> str:
+    """Remove HTML comments and <details> blocks, leaving inline markers."""
     if not text:
         return ""
     result = _HTML_COMMENT_RE.sub("", text)
+    result = _DETAILS_BLOCK_RE.sub(_replace_details, result)
+    result = _DETAILS_NO_SUMMARY_RE.sub("<!-- collapsed details block -->", result)
     # Collapse runs of 3+ newlines down to 2
     result = re.sub(r"\n{3,}", "\n\n", result)
     return result.strip()
 
 
-# Type alias for text fields that should have HTML comments stripped
+# Type alias for note body fields: strips HTML comments and <details> blocks
 HtmlCommentFree = Annotated[
     str | None,
-    PlainSerializer(lambda v: strip_html_comments(v), return_type=str),
+    PlainSerializer(lambda v: clean_note_body(v), return_type=str),
 ]

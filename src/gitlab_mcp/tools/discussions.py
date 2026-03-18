@@ -11,9 +11,27 @@ from gitlab_mcp.models import (
     NoteDeleteResult,
     DiscussionNoteDeleteResult,
 )
+from gitlab_mcp.models.discussions import DiscussionDetail
 from gitlab_mcp.utils.pagination import paginate
 
 logger = logging.getLogger(__name__)
+
+
+def _filter_discussions(
+    discussions: list[DiscussionSummary],
+    include_system: bool,
+) -> list[DiscussionSummary]:
+    """Filter discussions: remove system notes and empty discussions."""
+    if include_system:
+        return discussions
+
+    result = []
+    for d in discussions:
+        filtered_notes = [n for n in d.notes if not n.system]
+        if filtered_notes:
+            d.notes = filtered_notes
+            result.append(d)
+    return result
 
 
 @mcp.tool(annotations={"title": "MR Discussions", "readOnlyHint": True, "openWorldHint": True})
@@ -21,18 +39,30 @@ def mr_discussions(
     project_id: str,
     mr_iid: int,
     per_page: int = 20,
-) -> list[DiscussionSummary]:
+    include_system: bool = False,
+    raw: bool = False,
+) -> list[DiscussionSummary] | list[DiscussionDetail]:
     """List discussions/threads on a merge request.
+
+    By default, note bodies are cleaned (HTML comments stripped, <details>
+    blocks collapsed) and system notes are excluded. Use raw=True for
+    full unstripped markdown. To fetch a single discussion with full
+    content, use get_mr_discussion instead.
 
     Args:
         project_id: Project ID or path (e.g., "mygroup/myproject")
         mr_iid: Merge request number
         per_page: Items per page (default 20, max 100)
+        include_system: Include system-generated notes (default false)
+        raw: Return full unstripped markdown bodies (default false)
     """
     project = get_project(project_id)
     mr = project.mergerequests.get(mr_iid)
     discussions = paginate(mr.discussions, per_page=per_page)
-    return DiscussionSummary.from_gitlab(discussions)
+    if raw:
+        return DiscussionDetail.from_gitlab(discussions)
+    result = DiscussionSummary.from_gitlab(discussions)
+    return _filter_discussions(result, include_system)
 
 
 @mcp.tool(annotations={"title": "Issue Discussions", "readOnlyHint": True, "openWorldHint": True})
@@ -40,18 +70,50 @@ def list_issue_discussions(
     project_id: str,
     issue_iid: int,
     per_page: int = 20,
-) -> list[DiscussionSummary]:
+    include_system: bool = False,
+    raw: bool = False,
+) -> list[DiscussionSummary] | list[DiscussionDetail]:
     """List discussions/threads on an issue.
+
+    By default, note bodies are cleaned and system notes are excluded.
+    Use raw=True for full unstripped markdown.
 
     Args:
         project_id: Project ID or path
         issue_iid: Issue number
         per_page: Items per page (default 20, max 100)
+        include_system: Include system-generated notes (default false)
+        raw: Return full unstripped markdown bodies (default false)
     """
     project = get_project(project_id)
     issue = project.issues.get(issue_iid)
     discussions = paginate(issue.discussions, per_page=per_page)
-    return DiscussionSummary.from_gitlab(discussions)
+    if raw:
+        return DiscussionDetail.from_gitlab(discussions)
+    result = DiscussionSummary.from_gitlab(discussions)
+    return _filter_discussions(result, include_system)
+
+
+@mcp.tool(annotations={"title": "Get MR Discussion", "readOnlyHint": True, "openWorldHint": True})
+def get_mr_discussion(
+    project_id: str,
+    mr_iid: int,
+    discussion_id: str,
+) -> DiscussionDetail:
+    """Get a single discussion thread with full unstripped note bodies.
+
+    Use this to see the complete content of notes that were collapsed
+    in the mr_discussions listing.
+
+    Args:
+        project_id: Project ID or path (e.g., "mygroup/myproject")
+        mr_iid: Merge request number
+        discussion_id: Discussion ID
+    """
+    project = get_project(project_id)
+    mr = project.mergerequests.get(mr_iid)
+    discussion = mr.discussions.get(discussion_id)
+    return DiscussionDetail.from_gitlab(discussion)
 
 
 @mcp.tool(
