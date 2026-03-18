@@ -56,9 +56,9 @@ class TestListNamespaces:
         result = list_namespaces()
 
         assert len(result) == 1
-        assert result[0]["id"] == 123
-        assert result[0]["name"] == "Test Namespace"
-        assert result[0]["path"] == "test-namespace"
+        assert result[0].id == 123
+        assert result[0].name == "Test Namespace"
+        assert result[0].path == "test-namespace"
 
         # Verify paginate was called with correct defaults
         mock_paginate.assert_called_once()
@@ -156,12 +156,12 @@ class TestListNamespaces:
         result = list_namespaces()
 
         assert len(result) == 2
-        assert result[0]["id"] == 1
-        assert result[0]["name"] == "Namespace 1"
-        assert result[0]["kind"] == "group"
-        assert result[1]["id"] == 2
-        assert result[1]["name"] == "Namespace 2"
-        assert result[1]["kind"] == "user"
+        assert result[0].id == 1
+        assert result[0].name == "Namespace 1"
+        assert result[0].kind == "group"
+        assert result[1].id == 2
+        assert result[1].name == "Namespace 2"
+        assert result[1].kind == "user"
 
     @patch("gitlab_mcp.tools.namespaces.get_client")
     @patch("gitlab_mcp.tools.namespaces.paginate")
@@ -187,19 +187,19 @@ class TestGetNamespace:
 
         result = get_namespace(123)
 
-        assert result["id"] == 123
-        assert result["name"] == "Test Namespace"
-        assert result["path"] == "test-namespace"
-        assert result["description"] == "Test description"
-        assert result["kind"] == "group"
-        assert result["full_path"] == "parent/test-namespace"
+        assert result.id == 123
+        assert result.name == "Test Namespace"
+        assert result.path == "test-namespace"
+        assert result.description == "Test description"
+        assert result.kind == "group"
+        assert result.full_path == "parent/test-namespace"
 
         # Note: members_count and parent_id are optional fields
         # They're included via getattr so may not be in the result
-        if "members_count" in result:
-            assert result["members_count"] == 5
-        if "parent_id" in result:
-            assert result["parent_id"] == 456
+        if hasattr(result, "members_count"):
+            assert result.members_count == 5
+        if hasattr(result, "parent_id"):
+            assert result.parent_id == 456
 
         mock_client.namespaces.get.assert_called_once_with(123)
 
@@ -211,7 +211,7 @@ class TestGetNamespace:
 
         result = get_namespace("test-namespace")
 
-        assert result["name"] == "Test Namespace"
+        assert result.name == "Test Namespace"
         mock_client.namespaces.get.assert_called_once_with("test-namespace")
 
     @patch("gitlab_mcp.tools.namespaces.get_client")
@@ -231,12 +231,12 @@ class TestGetNamespace:
         result = get_namespace(789)
 
         # Main fields should be present
-        assert result["id"] == 789
-        assert result["name"] == "Simple Namespace"
-        assert result["path"] == "simple"
-        assert result["kind"] == "user"
-        assert result["full_path"] == "simple"
-        assert result["description"] == "A simple user namespace"
+        assert result.id == 789
+        assert result.name == "Simple Namespace"
+        assert result.path == "simple"
+        assert result.kind == "user"
+        assert result.full_path == "simple"
+        assert result.description == "A simple user namespace"
 
 
 class TestVerifyNamespace:
@@ -250,12 +250,12 @@ class TestVerifyNamespace:
 
         result = verify_namespace("test-namespace")
 
-        assert result["exists"] is True
-        assert result["id"] == 123
-        assert result["name"] == "Test Namespace"
-        assert result["path"] == "test-namespace"
-        assert result["full_path"] == "parent/test-namespace"
-        assert result["kind"] == "group"
+        assert result.exists is True
+        assert result.id == 123
+        assert result.name == "Test Namespace"
+        assert result.path == "test-namespace"
+        assert result.full_path == "parent/test-namespace"
+        assert result.kind == "group"
 
         mock_client.namespaces.get.assert_called_once_with("test-namespace", lazy=True)
         mock_namespace.reload.assert_called_once()
@@ -268,9 +268,9 @@ class TestVerifyNamespace:
 
         result = verify_namespace("nonexistent")
 
-        assert result["exists"] is False
-        assert result["error"] == "Namespace not found: nonexistent"
-        assert result["path"] == "nonexistent"
+        assert result.exists is False
+        assert result.error == "Namespace not found: nonexistent"
+        assert result.path == "nonexistent"
 
     @patch("gitlab_mcp.tools.namespaces.get_client")
     def test_verify_namespace_subgroup_path(self, mock_get_client, mock_client, mock_namespace):
@@ -281,5 +281,5 @@ class TestVerifyNamespace:
 
         result = verify_namespace("parent/child/grandchild")
 
-        assert result["exists"] is True
-        assert result["full_path"] == "parent/child/grandchild"
+        assert result.exists is True
+        assert result.full_path == "parent/child/grandchild"

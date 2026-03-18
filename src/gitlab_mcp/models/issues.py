@@ -3,6 +3,7 @@
 from typing import Literal
 from pydantic import Field, field_validator, field_serializer
 from gitlab_mcp.models.base import BaseGitLabModel, RelativeTime, SafeString
+from gitlab_mcp.models.misc import UserRef
 
 
 def format_seconds(seconds: int) -> str:
@@ -26,8 +27,8 @@ class IssueSummary(BaseGitLabModel):
     title: str
     description: SafeString = ""
     state: Literal["opened", "closed"]
-    author: str
-    assignees: list[str] = Field(default_factory=list)
+    author: UserRef
+    assignees: list[UserRef] = Field(default_factory=list)
     labels: list[str] = Field(default_factory=list)
     url: str = Field(alias="web_url")
     created: RelativeTime = Field(alias="created_at")
@@ -44,20 +45,6 @@ class IssueSummary(BaseGitLabModel):
     def normalize_description(cls, v):
         """Convert None to empty string."""
         return "" if v is None else v
-
-    @field_validator("author", mode="before")
-    @classmethod
-    def extract_author(cls, v):
-        """Extract username from author dict."""
-        return v["username"] if isinstance(v, dict) else v
-
-    @field_validator("assignees", mode="before")
-    @classmethod
-    def extract_assignees(cls, v):
-        """Extract usernames from assignees list."""
-        if not v:
-            return []
-        return [a["username"] for a in v] if isinstance(v[0], dict) else v
 
     @field_validator("milestone", mode="before")
     @classmethod
@@ -94,7 +81,7 @@ class IssueNote(BaseGitLabModel):
 
     id: int
     body: SafeString
-    author: str
+    author: UserRef
     created: RelativeTime = Field(alias="created_at")
     is_system: bool = Field(
         False,
@@ -104,12 +91,6 @@ class IssueNote(BaseGitLabModel):
     reactions: dict[str, int] = Field(
         default_factory=dict, description="Emoji reactions with counts", exclude=True
     )
-
-    @field_validator("author", mode="before")
-    @classmethod
-    def extract_author(cls, v):
-        """Extract username from author dict."""
-        return v["username"] if isinstance(v, dict) else v
 
 
 class IssueLink(BaseGitLabModel):

@@ -68,7 +68,7 @@ from gitlab_mcp.models.releases import (
 )
 from gitlab_mcp.models.draft_notes import DraftNoteSummary, DraftNoteDeleteResult, DraftNotePublishResult, BulkPublishDraftNotesResult
 from gitlab_mcp.models.uploads import UploadSummary, DownloadResult
-from gitlab_mcp.models.misc import NamespaceSummary, UserSummary, EventSummary, IterationSummary, NamespaceVerification
+from gitlab_mcp.models.misc import NamespaceSummary, UserRef, UserSummary, EventSummary, IterationSummary, NamespaceVerification
 from gitlab_mcp.models.graphql import GraphQLResponse, PaginationResult, GraphQLError, PageInfo
 
 __all__ = [
@@ -147,6 +147,7 @@ __all__ = [
     # Misc
     "NamespaceSummary",
     "NamespaceVerification",
+    "UserRef",
     "UserSummary",
     "EventSummary",
     "IterationSummary",

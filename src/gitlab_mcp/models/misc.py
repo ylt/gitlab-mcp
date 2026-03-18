@@ -1,8 +1,14 @@
 """Miscellaneous models for namespaces, users, iterations."""
 
 from typing import Literal
-from pydantic import Field, computed_field, field_validator
-from gitlab_mcp.models.base import BaseGitLabModel, relative_time, SafeString, safe_str
+from pydantic import Field, field_validator
+from gitlab_mcp.models.base import (
+    BaseGitLabModel,
+    RelativeTime,
+    RelativeTimeOptional,
+    SafeString,
+    safe_str,
+)
 
 
 class NamespaceSummary(BaseGitLabModel):
@@ -16,6 +22,14 @@ class NamespaceSummary(BaseGitLabModel):
     description: str | None = None
 
 
+class UserRef(BaseGitLabModel):
+    """Slim user reference for embedding in other models."""
+
+    id: int = Field(0, description="User ID")
+    username: str = Field(description="Username (login)")
+    name: str | None = Field(None, description="Display name")
+
+
 class UserSummary(BaseGitLabModel):
     """user summary."""
 
@@ -23,50 +37,18 @@ class UserSummary(BaseGitLabModel):
     username: str
     name: str
     state: str | None = None
-    last_activity_on: str | None = Field(None, exclude=True)
-
-    @computed_field
-    @property
-    def last_active(self) -> str | None:
-        """Last activity (relative time)."""
-        return relative_time(self.last_activity_on) if self.last_activity_on else None
+    last_active: RelativeTimeOptional = Field(None, exclude=True, alias="last_activity_on")
 
 
 class EventSummary(BaseGitLabModel):
     """event/activity summary."""
 
     id: int
-    action_name: str | None = Field(None, exclude=True)
+    action: str | None = Field(None, exclude=True, alias="action_name")
     target_type: str | None = None
-    target_title: str | None = None
-    author: str | None = None
-    created_at: str = Field(exclude=True)
-
-    @field_validator("target_title", mode="before")
-    @classmethod
-    def clean_target_title(cls, v):
-        """Clean null target titles."""
-        return safe_str(v)
-
-    @field_validator("author", mode="before")
-    @classmethod
-    def extract_author(cls, v):
-        """Extract username from author dict."""
-        if isinstance(v, dict):
-            return v.get("username")
-        return v
-
-    @computed_field
-    @property
-    def action(self) -> str | None:
-        """Action name."""
-        return self.action_name
-
-    @computed_field
-    @property
-    def created(self) -> str:
-        """When created (relative time)."""
-        return relative_time(self.created_at)
+    target_title: SafeString = None
+    author: UserRef | None = None
+    created: RelativeTime = Field(exclude=True, alias="created_at")
 
 
 class IterationSummary(BaseGitLabModel):
@@ -78,20 +60,8 @@ class IterationSummary(BaseGitLabModel):
     state: str
     start_date: str | None = None
     due_date: str | None = None
-    web_url: str
-    created_at: str = Field(exclude=True)
-
-    @computed_field
-    @property
-    def url(self) -> str:
-        """Web URL to view iteration."""
-        return self.web_url
-
-    @computed_field
-    @property
-    def created(self) -> str:
-        """When created (relative time)."""
-        return relative_time(self.created_at)
+    url: str = Field(alias="web_url")
+    created: RelativeTime = Field(exclude=True, alias="created_at")
 
 
 class NamespaceVerification(BaseGitLabModel):

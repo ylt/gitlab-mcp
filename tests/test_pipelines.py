@@ -68,9 +68,9 @@ class TestCreatePipeline:
         assert "description" not in call_args
 
         # Verify response structure
-        assert result["id"] == 123
-        assert result["status"] == "success"
-        assert result["ref"] == "main"
+        assert result.id == 123
+        assert result.status == "success"
+        assert result.ref == "main"
 
     @patch("gitlab_mcp.tools.pipelines.get_project")
     def test_create_pipeline_with_variables(self, mock_get_project, mock_project, mock_pipeline):
@@ -169,7 +169,7 @@ class TestListPipelines:
 
         # Verify response structure
         assert len(result) == 1
-        assert result[0]["id"] == 123
+        assert result[0].id == 123
 
 
 class TestGetPipeline:
@@ -187,8 +187,8 @@ class TestGetPipeline:
         mock_project.pipelines.get.assert_called_once_with(123)
 
         # Verify response structure
-        assert result["id"] == 123
-        assert result["status"] == "success"
+        assert result.id == 123
+        assert result.status == "success"
 
 
 class TestRetryPipeline:
@@ -236,7 +236,7 @@ class TestRetryPipelineErrorHandling:
 
     @patch("gitlab_mcp.tools.pipelines.get_project")
     def test_retry_pipeline_already_succeeded(self, mock_get_project, mock_project):
-        """Test retry_pipeline skips retry if pipeline already succeeded."""
+        """Test retry_pipeline raises error if pipeline already succeeded."""
         mock_get_project.return_value = mock_project
 
         pipeline = MagicMock()
@@ -246,16 +246,12 @@ class TestRetryPipelineErrorHandling:
 
         mock_project.pipelines.get.return_value = pipeline
 
-        result = retry_pipeline("myproject", 456)
+        # Should raise ValueError for non-retryable status
+        with pytest.raises(ValueError, match="already succeeded"):
+            retry_pipeline("myproject", 456)
 
         # Verify retry was NOT called
         pipeline.retry.assert_not_called()
-
-        # Verify graceful response
-        assert result["status"] == "skipped"
-        assert result["message"] == "Pipeline already succeeded; no retry needed"
-        assert result["pipeline_id"] == 456
-        assert result["current_status"] == "success"
 
 
 class TestCancelPipelineErrorHandling:
@@ -263,7 +259,7 @@ class TestCancelPipelineErrorHandling:
 
     @patch("gitlab_mcp.tools.pipelines.get_project")
     def test_cancel_pipeline_already_completed(self, mock_get_project, mock_project):
-        """Test cancel_pipeline skips cancel for completed pipelines."""
+        """Test cancel_pipeline raises error for completed pipelines."""
         mock_get_project.return_value = mock_project
 
         pipeline = MagicMock()
@@ -273,20 +269,16 @@ class TestCancelPipelineErrorHandling:
 
         mock_project.pipelines.get.return_value = pipeline
 
-        result = cancel_pipeline("myproject", 789)
+        # Should raise ValueError for non-cancelable status
+        with pytest.raises(ValueError, match="already failed"):
+            cancel_pipeline("myproject", 789)
 
         # Verify cancel was NOT called
         pipeline.cancel.assert_not_called()
 
-        # Verify graceful response
-        assert result["status"] == "skipped"
-        assert result["message"] == "Pipeline already failed; cannot cancel"
-        assert result["pipeline_id"] == 789
-        assert result["current_status"] == "failed"
-
     @patch("gitlab_mcp.tools.pipelines.get_project")
     def test_cancel_pipeline_multiple_completed_statuses(self, mock_get_project, mock_project):
-        """Test cancel_pipeline handles various completed statuses."""
+        """Test cancel_pipeline raises error for various completed statuses."""
         mock_get_project.return_value = mock_project
 
         for status in ("success", "failed", "canceled", "skipped"):
@@ -297,12 +289,12 @@ class TestCancelPipelineErrorHandling:
 
             mock_project.pipelines.get.return_value = pipeline
 
-            result = cancel_pipeline("myproject", 999)
+            # Should raise ValueError for non-cancelable statuses
+            with pytest.raises(ValueError, match="already|cannot cancel"):
+                cancel_pipeline("myproject", 999)
 
             # Verify cancel was NOT called for any completed status
             pipeline.cancel.assert_not_called()
-            assert result["status"] == "skipped"
-            assert result["current_status"] == status
 
 
 class TestPlayJobErrorHandling:
@@ -310,7 +302,7 @@ class TestPlayJobErrorHandling:
 
     @patch("gitlab_mcp.tools.pipelines.get_project")
     def test_play_job_not_manual_or_skipped(self, mock_get_project, mock_project):
-        """Test play_pipeline_job skips play for non-manual/skipped jobs."""
+        """Test play_pipeline_job raises error for non-manual/skipped jobs."""
         mock_get_project.return_value = mock_project
 
         job = MagicMock()
@@ -320,16 +312,12 @@ class TestPlayJobErrorHandling:
 
         mock_project.jobs.get.return_value = job
 
-        result = play_pipeline_job("myproject", 111)
+        # Should raise ValueError for non-playable jobs
+        with pytest.raises(ValueError, match="only manual or skipped"):
+            play_pipeline_job("myproject", 111)
 
         # Verify play was NOT called
         job.play.assert_not_called()
-
-        # Verify graceful response
-        assert result["status"] == "skipped"
-        assert result["message"] == "Job is success; only manual or skipped jobs can be played"
-        assert result["job_id"] == 111
-        assert result["current_status"] == "success"
 
     @patch("gitlab_mcp.tools.pipelines.get_project")
     def test_play_job_valid_statuses(self, mock_get_project, mock_project):
@@ -358,8 +346,8 @@ class TestPlayJobErrorHandling:
             # Verify play WAS called
             job.play.assert_called_once()
             # Result should be dict from JobSummary
-            assert isinstance(result, dict)
-            assert result["id"] == 222
+            assert hasattr(result, 'id')
+            assert result.id == 222
 
             # Reset mock for next iteration
             mock_project.jobs.get.reset_mock()
@@ -370,7 +358,7 @@ class TestRetryJobErrorHandling:
 
     @patch("gitlab_mcp.tools.pipelines.get_project")
     def test_retry_job_not_failed(self, mock_get_project, mock_project):
-        """Test retry_pipeline_job skips retry for non-failed jobs."""
+        """Test retry_pipeline_job raises error for non-failed jobs."""
         mock_get_project.return_value = mock_project
 
         job = MagicMock()
@@ -380,16 +368,12 @@ class TestRetryJobErrorHandling:
 
         mock_project.jobs.get.return_value = job
 
-        result = retry_pipeline_job("myproject", 333)
+        # Should raise ValueError for non-failed jobs
+        with pytest.raises(ValueError, match="only failed jobs"):
+            retry_pipeline_job("myproject", 333)
 
         # Verify retry was NOT called
         job.retry.assert_not_called()
-
-        # Verify graceful response
-        assert result["status"] == "skipped"
-        assert result["message"] == "Job is success; only failed jobs can be retried"
-        assert result["job_id"] == 333
-        assert result["current_status"] == "success"
 
     @patch("gitlab_mcp.tools.pipelines.get_project")
     def test_retry_job_various_non_failed_statuses(self, mock_get_project, mock_project):
@@ -404,12 +388,12 @@ class TestRetryJobErrorHandling:
 
             mock_project.jobs.get.return_value = job
 
-            result = retry_pipeline_job("myproject", 444)
+            # Should raise ValueError for non-failed statuses
+            with pytest.raises(ValueError, match="only failed jobs"):
+                retry_pipeline_job("myproject", 444)
 
             # Verify retry was NOT called
             job.retry.assert_not_called()
-            assert result["status"] == "skipped"
-            assert result["current_status"] == status
 
             # Reset mock for next iteration
             mock_project.jobs.get.reset_mock()
@@ -420,7 +404,7 @@ class TestCancelJobErrorHandling:
 
     @patch("gitlab_mcp.tools.pipelines.get_project")
     def test_cancel_job_already_completed(self, mock_get_project, mock_project):
-        """Test cancel_pipeline_job skips cancel for completed jobs."""
+        """Test cancel_pipeline_job raises error for completed jobs."""
         mock_get_project.return_value = mock_project
 
         job = MagicMock()
@@ -430,20 +414,16 @@ class TestCancelJobErrorHandling:
 
         mock_project.jobs.get.return_value = job
 
-        result = cancel_pipeline_job("myproject", 555)
+        # Should raise ValueError for completed jobs
+        with pytest.raises(ValueError, match="already|cannot cancel"):
+            cancel_pipeline_job("myproject", 555)
 
         # Verify cancel was NOT called
         job.cancel.assert_not_called()
 
-        # Verify graceful response
-        assert result["status"] == "skipped"
-        assert result["message"] == "Job already success; cannot cancel"
-        assert result["job_id"] == 555
-        assert result["current_status"] == "success"
-
     @patch("gitlab_mcp.tools.pipelines.get_project")
     def test_cancel_job_multiple_completed_statuses(self, mock_get_project, mock_project):
-        """Test cancel_pipeline_job handles various completed statuses."""
+        """Test cancel_pipeline_job raises error for various completed statuses."""
         mock_get_project.return_value = mock_project
 
         for status in ("success", "failed", "canceled", "skipped"):
@@ -454,12 +434,12 @@ class TestCancelJobErrorHandling:
 
             mock_project.jobs.get.return_value = job
 
-            result = cancel_pipeline_job("myproject", 666)
+            # Should raise ValueError for completed statuses
+            with pytest.raises(ValueError, match="already|cannot cancel"):
+                cancel_pipeline_job("myproject", 666)
 
             # Verify cancel was NOT called for any completed status
             job.cancel.assert_not_called()
-            assert result["status"] == "skipped"
-            assert result["current_status"] == status
 
             # Reset mock for next iteration
             mock_project.jobs.get.reset_mock()

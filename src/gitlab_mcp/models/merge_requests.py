@@ -13,6 +13,7 @@ from gitlab_mcp.models.base import (
     RelativeTime,
     SafeString,
 )
+from gitlab_mcp.models.misc import UserRef
 
 
 def ensure_string(v: str | None) -> str:
@@ -30,34 +31,27 @@ class MergeRequestSummary(BaseGitLabModel):
     title: str
     description: SafeString = ""
     state: Literal["opened", "closed", "merged", "locked"]
-    author: str = Field(description="Username of the author")
+    author: UserRef = Field(description="Author of the merge request")
     source_branch: str
     target_branch: str
-    url: str = Field(alias="web_url", description="Web URL to view the MR")
     created: RelativeTime = Field(alias="created_at", description="When created (relative)")
     updated: RelativeTime = Field(alias="updated_at", description="When last updated (relative)")
-    reviewers: list[str] = Field(default_factory=list)
+    reviewers: list[UserRef] = Field(default_factory=list)
 
     # Fields for computed properties (extracted in model_validator)
-    approvals_required: int = 0
-    approvals_left: int = 0
+    _approvals_required: int = 0
+    _approvals_left: int = 0
     head_pipeline: dict | None = None
-    merge_status: str | None = None
-    detailed_merge_status: str | None = None
+    _merge_status: str | None = None
+    _detailed_merge_status: str | None = None
 
-    @field_validator("author", mode="before")
+    @field_validator("description", mode="after")
     @classmethod
-    def extract_author(cls, v):
-        """Extract username from author dict."""
-        return v["username"] if isinstance(v, dict) else v
-
-    @field_validator("reviewers", mode="before")
-    @classmethod
-    def extract_reviewers(cls, v):
-        """Extract usernames from reviewers list."""
-        if not v:
-            return []
-        return [r["username"] for r in v] if isinstance(v[0], dict) else v
+    def truncate_description(cls, v: str) -> str:
+        """Truncate description to 200 chars for list views."""
+        if len(v) > 200:
+            return v[:197] + "..."
+        return v
 
     @model_validator(mode="before")
     @classmethod
@@ -71,11 +65,18 @@ class MergeRequestSummary(BaseGitLabModel):
                 approvals_left = getattr(approval_obj, "approvals_left", 0)
 
                 # Set as attributes for from_attributes extraction
-                data.approvals_required = approvals_required
-                data.approvals_left = approvals_left
+                data._approvals_required = approvals_required
+                data._approvals_left = approvals_left
             except (TypeError, AttributeError):
                 pass
         return data
+
+    @computed_field
+    @property
+    def approvals(self) -> str:
+        """Approval status as 'approved/required'."""
+        approved = self._approvals_required - self._approvals_left
+        return f"{approved}/{self._approvals_required}"
 
     @computed_field
     @property
@@ -92,21 +93,21 @@ class MergeRequestSummary(BaseGitLabModel):
                 blockers.append(f"Pipeline {pipeline_status}")
 
         # Check merge status for conflicts
-        if self.merge_status == "cannot_be_merged":
+        if self._merge_status == "cannot_be_merged":
             blockers.append("Has conflicts")
 
         # Check detailed merge status (GitLab 15.6+)
-        if self.detailed_merge_status:
-            if self.detailed_merge_status == "draft":
+        if self._detailed_merge_status:
+            if self._detailed_merge_status == "draft":
                 blockers.append("MR is draft")
-            elif self.detailed_merge_status == "discussions_not_resolved":
+            elif self._detailed_merge_status == "discussions_not_resolved":
                 blockers.append("Unresolved discussions")
-            elif self.detailed_merge_status == "blocked_status":
+            elif self._detailed_merge_status == "blocked_status":
                 blockers.append("Blocked by rule")
 
         # Check approvals
-        if self.approvals_left > 0:
-            blockers.append(f"{self.approvals_left} approvals needed")
+        if self._approvals_left > 0:
+            blockers.append(f"{self._approvals_left} approvals needed")
 
         return blockers
 
@@ -115,21 +116,6 @@ class MergeRequestSummary(BaseGitLabModel):
     def ready_to_merge(self) -> bool:
         """Whether MR can be merged now."""
         return self.state == "opened" and len(self.blockers) == 0
-
-    @computed_field
-    @property
-    def summary(self) -> str:
-        """One-line summary: '{state} MR by {author} - {ready_to_merge status} - {pipeline status}'."""
-        pipeline_status = "unknown"
-        if self.head_pipeline:
-            pipeline_status = (
-                self.head_pipeline.get("status")
-                if isinstance(self.head_pipeline, dict)
-                else "unknown"
-            )
-
-        ready_status = "ready" if self.ready_to_merge else "not ready"
-        return f"{self.state} MR by {self.author} - {ready_status} - {pipeline_status}"
 
 
 class MergeRequestDiff(BaseGitLabModel):
@@ -164,15 +150,7 @@ class MergeRequestApproval(BaseGitLabModel):
 
     approvals_required: int = Field(description="Total approvals required")
     approvals_left: int = Field(description="Remaining approvals needed")
-    approved_by: list[str] = Field(default_factory=list, description="Usernames who approved")
-
-    @field_validator("approved_by", mode="before")
-    @classmethod
-    def extract_approved_by(cls, v):
-        """Extract usernames from approved_by list."""
-        if not v:
-            return []
-        return [u.get("user", {}).get("username", "unknown") for u in v]
+    approved_by: list[UserRef] = Field(default_factory=list, description="Users who approved")
 
     @computed_field
     @property
@@ -225,47 +203,15 @@ class ApprovalRule(BaseGitLabModel):
     )
 
 
-class ApprovalUser(BaseGitLabModel):
-    """User who approved a merge request."""
-
-    id: int = Field(description="User ID")
-    username: str = Field(description="Username")
-
-    @model_validator(mode="before")
-    @classmethod
-    def extract_from_user_dict(cls, data):
-        """Extract id and username from nested user dict."""
-        if isinstance(data, dict) and "user" in data:
-            user = data["user"]
-            return {"id": user["id"], "username": user["username"]}
-        return data
-
-
 class ApprovalStateDetailed(BaseGitLabModel):
     """Detailed approval state for a merge request."""
 
     approved: bool = Field(description="Whether MR is approved")
-    approved_by: list[ApprovalUser] = Field(default_factory=list, description="Users who approved")
+    approved_by: list[UserRef] = Field(default_factory=list, description="Users who approved")
     approvals_left: int = Field(description="Remaining approvals needed")
     approval_rules_left: list[ApprovalRule] = Field(
         default_factory=list, description="Approval rules still needed", alias="rules"
     )
-
-    @field_validator("approved_by", mode="before")
-    @classmethod
-    def extract_approved_by(cls, v):
-        """Build ApprovalUser list from approved_by."""
-        if not v:
-            return []
-        return [ApprovalUser.from_gitlab(user) for user in v]
-
-    @field_validator("approval_rules_left", mode="before")
-    @classmethod
-    def extract_approval_rules(cls, v):
-        """Build ApprovalRule list from rules."""
-        if not v:
-            return []
-        return [ApprovalRule.from_gitlab(rule) for rule in v]
 
 
 class MergeRequestNote(BaseGitLabModel):
@@ -307,7 +253,6 @@ class MergeRequestNote(BaseGitLabModel):
                 "system": getattr(data, "system", False),
             }
         return data
-
 
 class MergeRequestVersion(BaseGitLabModel):
     """Version (iteration) of a merge request."""

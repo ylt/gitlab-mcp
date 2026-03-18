@@ -1,7 +1,8 @@
 """Release models."""
 
-from pydantic import Field, field_validator
+from pydantic import Field
 from gitlab_mcp.models.base import BaseGitLabModel, RelativeTime
+from gitlab_mcp.models.misc import UserRef
 
 
 class ReleaseSummary(BaseGitLabModel):
@@ -10,17 +11,9 @@ class ReleaseSummary(BaseGitLabModel):
     tag_name: str = Field(description="Release tag (e.g., v1.0.0)")
     name: str | None = None
     description: str | None = None
-    author: str | None = None
+    author: UserRef | None = None
     created_at: RelativeTime = Field(description="When created")
     released_at: RelativeTime | None = Field(None, description="When released")
-
-    @field_validator("author", mode="before")
-    @classmethod
-    def extract_author(cls, v):
-        """Extract username from author dict."""
-        if isinstance(v, dict):
-            return v.get("username")
-        return v
 
 
 class ReleaseDeleteResult(BaseGitLabModel):

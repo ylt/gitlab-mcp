@@ -2,7 +2,8 @@
 
 from typing import Literal
 from pydantic import Field, field_validator, computed_field
-from gitlab_mcp.models.base import BaseGitLabModel, relative_time
+from gitlab_mcp.models.base import BaseGitLabModel, relative_time, RelativeTime
+from gitlab_mcp.models.misc import UserRef
 
 
 class FileSummary(BaseGitLabModel):
@@ -43,8 +44,8 @@ class CommitSummary(BaseGitLabModel):
 
     id: str = Field(exclude=True)  # Raw full SHA
     title: str = Field(exclude=True)  # Raw commit title
-    author_name: str  # Keep as-is from API
-    created_at: str = Field(exclude=True)  # ISO datetime
+    author: str = Field(alias="author_name")  # Commit author name
+    created: RelativeTime = Field(alias="created_at")  # When created (relative time)
     parent_ids: list[str] | None = Field(None, exclude=True)  # Raw parent SHAs
     stats: dict | None = Field(None, exclude=True)  # Raw stats dict
 
@@ -59,18 +60,6 @@ class CommitSummary(BaseGitLabModel):
     def message(self) -> str:
         """First line of commit message."""
         return self.title
-
-    @computed_field
-    @property
-    def author(self) -> str:
-        """Commit author name."""
-        return self.author_name
-
-    @computed_field
-    @property
-    def created(self) -> str:
-        """When created (relative time)."""
-        return relative_time(self.created_at)
 
     @computed_field
     @property
@@ -188,7 +177,7 @@ class CommitDetails(BaseGitLabModel):
     full_sha: str
     message: str
     title: str
-    author: str
+    author: UserRef
     email: str
     created: str
     web_url: str
@@ -227,7 +216,7 @@ class ComparisonCommit(BaseGitLabModel):
 
     sha: str = Field(description="Short SHA (first 8 chars)")
     message: str
-    author: str
+    author: UserRef
     created: str
 
 

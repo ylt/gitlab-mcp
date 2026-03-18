@@ -88,8 +88,8 @@ class TestListMergeRequests:
 
         # Verify response structure
         assert len(result) == 1
-        assert result[0]["iid"] == 1
-        assert result[0]["title"] == "Test MR"
+        assert result[0].iid == 1
+        assert result[0].title == "Test MR"
 
     @patch("gitlab_mcp.tools.merge_requests.paginate")
     @patch("gitlab_mcp.tools.merge_requests.get_project")
@@ -252,7 +252,7 @@ class TestListMergeRequests:
 
         # Verify result structure
         assert len(result) == 1
-        assert isinstance(result[0], dict)
+        assert hasattr(result[0], 'iid')
 
     @patch("gitlab_mcp.tools.merge_requests.paginate")
     @patch("gitlab_mcp.tools.merge_requests.get_project")
@@ -338,10 +338,10 @@ class TestListMergeRequests:
 
         # Verify multiple results returned
         assert len(result) == 2
-        assert result[0]["iid"] == 1
-        assert result[0]["title"] == "First MR"
-        assert result[1]["iid"] == 2
-        assert result[1]["title"] == "Second MR"
+        assert result[0].iid == 1
+        assert result[0].title == "First MR"
+        assert result[1].iid == 2
+        assert result[1].title == "Second MR"
 
 
 class TestGetMergeRequest:
@@ -359,9 +359,9 @@ class TestGetMergeRequest:
         mock_project.mergerequests.get.assert_called_once_with(1)
 
         # Verify response structure
-        assert result["iid"] == 1
-        assert result["title"] == "Test MR"
-        assert result["state"] == "opened"
+        assert result.iid == 1
+        assert result.title == "Test MR"
+        assert result.state == "opened"
 
 
 class TestCreateMergeRequest:
@@ -388,5 +388,5 @@ class TestCreateMergeRequest:
         assert call_args["title"] == "New Feature"
 
         # Verify response
-        assert result["iid"] == 1
-        assert result["title"] == "Test MR"
+        assert result.iid == 1
+        assert result.title == "Test MR"

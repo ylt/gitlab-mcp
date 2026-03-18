@@ -45,8 +45,24 @@ class MCPToolChecker(BaseChecker):
 
     def visit_functiondef(self, node: nodes.FunctionDef) -> None:
         """Check function definitions for MCP tool violations."""
-        # Check for simple field serializers in models
+        # Check for simple field serializers and validators in models
         if self._has_field_serializer_decorator(node) and self._is_simple_delegation(node):
+            self.add_message("simple-field-serializer", node=node, args=(node.name,))
+
+        # Check for @computed_field that just calls relative_time()
+        if self._has_computed_field_decorator(node) and self._is_relative_time_delegation(node):
+            self.add_message("simple-field-serializer", node=node, args=(node.name,))
+
+        # Check for @computed_field that just returns another field
+        if self._has_computed_field_decorator(node) and self._is_field_alias(node):
+            self.add_message("simple-field-serializer", node=node, args=(node.name,))
+
+        # Check for @field_validator that just calls safe_str()
+        if self._has_field_validator_decorator(node) and self._is_safe_str_delegation(node):
+            self.add_message("simple-field-serializer", node=node, args=(node.name,))
+
+        # Check for @field_validator that loops and calls from_gitlab()
+        if self._has_field_validator_decorator(node) and self._is_list_from_gitlab_delegation(node):
             self.add_message("simple-field-serializer", node=node, args=(node.name,))
 
         # Check if function has @mcp.tool decorator
@@ -228,6 +244,150 @@ class MCPToolChecker(BaseChecker):
             # Check if it's a simple function call with one argument
             if len(stmt.value.args) == 1:
                 return True
+
+        return False
+
+    def _has_computed_field_decorator(self, node: nodes.FunctionDef) -> bool:
+        """Check if function has @computed_field decorator."""
+        if not node.decorators:
+            return False
+
+        for decorator in node.decorators.nodes:
+            # Handle @computed_field
+            if isinstance(decorator, nodes.Name):
+                if decorator.name == "computed_field":
+                    return True
+            # Handle @computed_field(...)
+            elif isinstance(decorator, nodes.Call):
+                if isinstance(decorator.func, nodes.Name):
+                    if decorator.func.name == "computed_field":
+                        return True
+        return False
+
+    def _has_field_validator_decorator(self, node: nodes.FunctionDef) -> bool:
+        """Check if function has @field_validator decorator."""
+        if not node.decorators:
+            return False
+
+        for decorator in node.decorators.nodes:
+            # Handle @field_validator(...) call
+            if isinstance(decorator, nodes.Call):
+                if isinstance(decorator.func, nodes.Name):
+                    if decorator.func.name == "field_validator":
+                        return True
+        return False
+
+    def _is_relative_time_delegation(self, node: nodes.FunctionDef) -> bool:
+        """Check if @computed_field just calls relative_time().
+
+        Matches pattern like:
+        - return relative_time(self.field) if self.field else None
+        """
+        if len(node.body) != 1:
+            return False
+
+        stmt = node.body[0]
+        if not isinstance(stmt, nodes.Return):
+            return False
+
+        # Pattern: return relative_time(...) if ... else None
+        if isinstance(stmt.value, nodes.IfExp):
+            if isinstance(stmt.value.body, nodes.Call):
+                if isinstance(stmt.value.body.func, nodes.Name):
+                    if stmt.value.body.func.name == "relative_time":
+                        return True
+
+        # Pattern: return relative_time(...)
+        if isinstance(stmt.value, nodes.Call):
+            if isinstance(stmt.value.func, nodes.Name):
+                if stmt.value.func.name == "relative_time":
+                    return True
+
+        return False
+
+    def _is_field_alias(self, node: nodes.FunctionDef) -> bool:
+        """Check if @computed_field just returns another field.
+
+        Matches pattern like:
+        - return self.other_field
+        """
+        if len(node.body) != 1:
+            return False
+
+        stmt = node.body[0]
+        if not isinstance(stmt, nodes.Return):
+            return False
+
+        # Pattern: return self.field_name
+        if isinstance(stmt.value, nodes.Attribute):
+            if isinstance(stmt.value.expr, nodes.Name):
+                if stmt.value.expr.name == "self":
+                    return True
+
+        return False
+
+    def _is_safe_str_delegation(self, node: nodes.FunctionDef) -> bool:
+        """Check if @field_validator just calls safe_str().
+
+        Matches pattern like:
+        - return safe_str(v)
+        """
+        if len(node.body) != 1:
+            return False
+
+        stmt = node.body[0]
+        if not isinstance(stmt, nodes.Return):
+            return False
+
+        # Pattern: return safe_str(v)
+        if isinstance(stmt.value, nodes.Call):
+            if isinstance(stmt.value.func, nodes.Name):
+                if stmt.value.func.name == "safe_str":
+                    # Check if it has exactly one argument
+                    if len(stmt.value.args) == 1:
+                        return True
+
+        return False
+
+    def _is_list_from_gitlab_delegation(self, node: nodes.FunctionDef) -> bool:
+        """Check if @field_validator loops and calls from_gitlab() on each item.
+
+        Matches pattern like:
+        - if not v:
+        -     return []
+        - return [SomeModel.from_gitlab(item) for item in v]
+
+        This is unnecessary because Pydantic's list[SomeModel] type annotation
+        automatically validates list elements.
+        """
+        # Should have exactly 3 statements: if-check, return empty, return list comprehension
+        if len(node.body) != 2:
+            return False
+
+        # First statement should be: if not v: return []
+        first_stmt = node.body[0]
+        if not isinstance(first_stmt, nodes.If):
+            return False
+
+        # Check if body has return statement with empty list
+        if len(first_stmt.body) != 1 or not isinstance(first_stmt.body[0], nodes.Return):
+            return False
+
+        return_stmt = first_stmt.body[0]
+        if not isinstance(return_stmt.value, nodes.List):
+            return False
+
+        if len(return_stmt.value.elts) != 0:
+            return False
+
+        # Second statement should be: return [SomeModel.from_gitlab(item) for item in v]
+        second_stmt = node.body[1]
+        if not isinstance(second_stmt, nodes.Return):
+            return False
+
+        # Check if it's a list comprehension calling from_gitlab
+        if self._is_from_gitlab_listcomp(second_stmt.value):
+            return True
 
         return False
 

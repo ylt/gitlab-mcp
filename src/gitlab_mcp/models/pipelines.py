@@ -1,8 +1,8 @@
 """Pipeline and job models."""
 
 from typing import Literal
-from pydantic import Field, field_validator, field_serializer, computed_field
-from gitlab_mcp.models.base import BaseGitLabModel, relative_time
+from pydantic import Field, field_validator, field_serializer
+from gitlab_mcp.models.base import BaseGitLabModel, RelativeTime
 
 
 class PipelineSummary(BaseGitLabModel):
@@ -24,32 +24,14 @@ class PipelineSummary(BaseGitLabModel):
     ]
     ref: str = Field(description="Branch or tag name")
     sha: str = Field(description="Commit SHA")
-    web_url: str = Field(exclude=True)  # Helper field for auto-extraction
-    created_at: str = Field(exclude=True)  # Helper field for auto-extraction
-    updated_at: str = Field(exclude=True)  # Helper field for auto-extraction
+    url: str = Field(alias="web_url", description="Web URL to view pipeline")
+    created: RelativeTime = Field(alias="created_at", description="When created (relative)")
+    updated: RelativeTime = Field(alias="updated_at", description="When last updated (relative)")
     duration: int | None = Field(None, description="Pipeline duration in seconds")
     stages: list[str] | list[dict] | None = Field(
         None, description="Stage names or stages breakdown with status and job count"
     )
     failure_reason: str | None = Field(None, description="Reason if pipeline failed")
-
-    @computed_field
-    @property
-    def url(self) -> str:
-        """Web URL to view pipeline."""
-        return self.web_url
-
-    @computed_field
-    @property
-    def created(self) -> str:
-        """When created (relative)."""
-        return relative_time(self.created_at)
-
-    @computed_field
-    @property
-    def updated(self) -> str:
-        """When last updated (relative)."""
-        return relative_time(self.updated_at)
 
     @field_validator("sha", mode="before")
     @classmethod
@@ -67,24 +49,12 @@ class JobSummary(BaseGitLabModel):
     name: str
     stage: str
     status: str
-    web_url: str = Field(exclude=True)  # Helper field for auto-extraction
+    url: str = Field(alias="web_url", description="Web URL to view job")
     duration: float | None = Field(None, description="Job duration in seconds")
-    created_at: str = Field(exclude=True)  # Helper field for auto-extraction
+    created: RelativeTime = Field(alias="created_at", description="When created (relative)")
     failure_reason: str | None = Field(None, description="Reason if job failed")
     retry_count: int = Field(0, description="Number of retries")
     artifacts: list[str] | None = Field(None, description="List of artifact filenames")
-
-    @computed_field
-    @property
-    def url(self) -> str:
-        """Web URL to view job."""
-        return self.web_url
-
-    @computed_field
-    @property
-    def created(self) -> str:
-        """When created (relative)."""
-        return relative_time(self.created_at)
 
     @field_validator("artifacts", mode="before")
     @classmethod

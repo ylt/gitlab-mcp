@@ -60,8 +60,8 @@ class TestCreateIssue:
 
         result = create_issue("myproject", "Test Issue", "Description")
 
-        assert result["iid"] == 1
-        assert result["title"] == "Test Issue"
+        assert result.iid == 1
+        assert result.title == "Test Issue"
         mock_project.issues.create.assert_called_once()
         call_args = mock_project.issues.create.call_args[0][0]
         assert call_args["title"] == "Test Issue"
@@ -79,7 +79,7 @@ class TestCreateIssue:
 
         result = create_issue("myproject", "Secret Issue", confidential=True)
 
-        assert result["confidential"] is True
+        assert result.confidential is True
         call_args = mock_project.issues.create.call_args[0][0]
         assert call_args["confidential"] is True
 
@@ -92,7 +92,7 @@ class TestCreateIssue:
 
         result = create_issue("myproject", "Weighted Issue", weight=5)
 
-        assert result["weight"] == 5
+        assert result.weight == 5
         call_args = mock_project.issues.create.call_args[0][0]
         assert call_args["weight"] == 5
 
@@ -105,7 +105,7 @@ class TestCreateIssue:
 
         result = create_issue("myproject", "Deadline Issue", due_date="2024-12-31")
 
-        assert result["due_date"] == "2024-12-31"
+        assert result.due_date == "2024-12-31"
         call_args = mock_project.issues.create.call_args[0][0]
         assert call_args["due_date"] == "2024-12-31"
 
@@ -129,9 +129,9 @@ class TestCreateIssue:
             due_date="2024-12-25",
         )
 
-        assert result["confidential"] is True
-        assert result["weight"] == 3
-        assert result["due_date"] == "2024-12-25"
+        assert result.confidential is True
+        assert result.weight == 3
+        assert result.due_date == "2024-12-25"
         call_args = mock_project.issues.create.call_args[0][0]
         assert call_args["confidential"] is True
         assert call_args["weight"] == 3
@@ -233,9 +233,9 @@ class TestGetIssue:
 
         result = get_issue("myproject", 1)
 
-        assert result["confidential"] is True
-        assert result["weight"] == 5
-        assert result["due_date"] == "2024-12-31"
+        assert result.confidential is True
+        assert result.weight == 5
+        assert result.due_date == "2024-12-31"
 
 
 class TestListIssues:
@@ -254,9 +254,9 @@ class TestListIssues:
         result = list_issues("myproject")
 
         assert len(result) == 1
-        assert result[0]["confidential"] is True
-        assert result[0]["weight"] == 3
-        assert result[0]["due_date"] == "2025-01-15"
+        assert result[0].confidential is True
+        assert result[0].weight == 3
+        assert result[0].due_date == "2025-01-15"
 
     @patch("gitlab_mcp.tools.issues.paginate")
     @patch("gitlab_mcp.tools.issues.get_project")

@@ -1,12 +1,13 @@
 """Discussion and note models."""
 
-from pydantic import Field, field_validator
+from pydantic import Field
 from gitlab_mcp.models.base import (
     BaseGitLabModel,
     RelativeTime,
     RelativeTimeOptional,
     SafeString,
 )
+from gitlab_mcp.models.misc import UserRef
 
 
 class NoteSummary(BaseGitLabModel):
@@ -14,18 +15,12 @@ class NoteSummary(BaseGitLabModel):
 
     id: int = Field(description="Note ID")
     body: SafeString = Field(description="Comment text")
-    author: str = Field(description="Username of author")
+    author: UserRef = Field(description="Author user reference")
     created_at: RelativeTime = Field(description="When created (ISO timestamp)")
     updated_at: RelativeTimeOptional = Field(
         default=None, description="When last updated (ISO timestamp)"
     )
     resolved: bool = Field(default=False, description="True if this note resolves a discussion")
-
-    @field_validator("author", mode="before")
-    @classmethod
-    def extract_author(cls, v):
-        """Extract username from author dict."""
-        return v["username"] if isinstance(v, dict) else v
 
 
 class DiscussionSummary(BaseGitLabModel):
@@ -35,20 +30,32 @@ class DiscussionSummary(BaseGitLabModel):
     notes: list[NoteSummary] = Field(
         default_factory=list, description="List of notes in discussion"
     )
-    created_at: RelativeTime = Field(description="When created (ISO timestamp)")
-    updated_at: RelativeTimeOptional = Field(
-        default=None, description="When last updated (ISO timestamp)"
-    )
     individual_note: bool = Field(default=False, description="True if single comment, not a thread")
 
-    @field_validator("notes", mode="before")
     @classmethod
-    def extract_notes(cls, v):
-        """Extract notes list from API response."""
-        if not v:
-            return []
-        # Convert raw note dicts to NoteSummary models
-        return [NoteSummary.from_gitlab(note) for note in v]
+    def from_gitlab(cls, obj):
+        """Transform GitLab Discussion object(s) to model instance(s)."""
+        # Handle list of discussions
+        if isinstance(obj, list):
+            return [cls.from_gitlab(item) for item in obj]
+
+        # Extract notes from raw attributes (already fetched in API response)
+        notes_data = []
+        if hasattr(obj, 'attributes') and 'notes' in obj.attributes:
+            raw_notes = obj.attributes['notes']
+            if isinstance(raw_notes, list):
+                notes_data = raw_notes
+            elif hasattr(raw_notes, 'list'):
+                # python-gitlab may wrap notes in a manager object
+                notes_data = [n.attributes for n in raw_notes.list()]
+            else:
+                notes_data = list(raw_notes)
+
+        return cls.model_validate({
+            'id': obj.id,
+            'notes': notes_data,
+            'individual_note': getattr(obj, 'individual_note', False),
+        })
 
 
 class NoteDeleteResult(BaseGitLabModel):
