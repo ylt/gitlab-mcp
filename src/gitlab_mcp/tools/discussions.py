@@ -108,6 +108,10 @@ def _filter_discussions(
             d.state = "unresolved"
 
         d.note_count = len(notes)
+        if d.state == "resolved":
+            d.notes = []
+            result.append(d)
+            continue
         if include_all_notes:
             d.notes = notes
         elif len(notes) == 1:
