@@ -42,12 +42,12 @@ def _filter_discussions(
             notes = [n for n in notes if not n.system]
 
         if state == "unresolved":
-            resolvable = [n for n in notes if n.resolvable]
-            if not resolvable or all(n.resolved for n in resolvable):
+            resolvable = [n for n in notes if n.resolvable is True]
+            if not resolvable or all(n.resolved is True for n in resolvable):
                 continue
         elif state == "resolved":
-            resolvable = [n for n in notes if n.resolvable]
-            if not resolvable or not all(n.resolved for n in resolvable):
+            resolvable = [n for n in notes if n.resolvable is True]
+            if not resolvable or not all(n.resolved is True for n in resolvable):
                 continue
 
         if not notes:
