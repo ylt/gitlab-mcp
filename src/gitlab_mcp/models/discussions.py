@@ -3,9 +3,9 @@
 from pydantic import Field
 from gitlab_mcp.models.base import (
     BaseGitLabModel,
+    HtmlCommentFree,
     RelativeTime,
     RelativeTimeOptional,
-    SafeString,
 )
 from gitlab_mcp.models.misc import UserRef
 
@@ -14,7 +14,7 @@ class NoteSummary(BaseGitLabModel):
     """Note/comment summary."""
 
     id: int = Field(description="Note ID")
-    body: SafeString = Field(description="Comment text")
+    body: HtmlCommentFree = Field(description="Comment text")
     author: UserRef = Field(description="Author user reference")
     created_at: RelativeTime = Field(description="When created (ISO timestamp)")
     updated_at: RelativeTimeOptional = Field(

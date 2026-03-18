@@ -1,15 +1,14 @@
 """Draft note models."""
 
-from datetime import datetime
 from pydantic import Field, field_validator
-from gitlab_mcp.models.base import BaseGitLabModel, RelativeTime
+from gitlab_mcp.models.base import BaseGitLabModel, HtmlCommentFree, RelativeTime
 
 
 class DraftNoteSummary(BaseGitLabModel):
     """AI-optimized draft note summary."""
 
     id: int = Field(description="Draft note ID")
-    body: str = Field(description="Draft note body text")
+    body: HtmlCommentFree = Field(description="Draft note body text")
     in_reply_to_discussion_id: str | None = Field(
         default=None, description="Discussion ID if this is a reply"
     )

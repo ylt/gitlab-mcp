@@ -1,5 +1,6 @@
 """Base model classes and shared utilities."""
 
+import re
 from datetime import datetime, timezone
 from typing import Annotated, overload
 
@@ -186,4 +187,23 @@ RelativeTimeOptional = Annotated[
 SafeString = Annotated[
     str | None,
     PlainSerializer(lambda v: safe_str(v), return_type=str),
+]
+
+_HTML_COMMENT_RE = re.compile(r"<!--.*?-->", re.DOTALL)
+
+
+def strip_html_comments(text: str | None) -> str:
+    """Remove HTML comments from text and clean up resulting whitespace."""
+    if not text:
+        return ""
+    result = _HTML_COMMENT_RE.sub("", text)
+    # Collapse runs of 3+ newlines down to 2
+    result = re.sub(r"\n{3,}", "\n\n", result)
+    return result.strip()
+
+
+# Type alias for text fields that should have HTML comments stripped
+HtmlCommentFree = Annotated[
+    str | None,
+    PlainSerializer(lambda v: strip_html_comments(v), return_type=str),
 ]

@@ -10,6 +10,7 @@ from pydantic import (
 )
 from gitlab_mcp.models.base import (
     BaseGitLabModel,
+    HtmlCommentFree,
     RelativeTime,
     SafeString,
 )
@@ -222,7 +223,7 @@ class MergeRequestNote(BaseGitLabModel):
     author: str = Field(description="Author username")
     created_at: str = Field(description="When created")
     updated_at: str = Field(description="When last updated")
-    body: str = Field(description="Note content")
+    body: HtmlCommentFree = Field(description="Note content")
     system: bool = Field(description="Whether this is a system note")
 
     @model_validator(mode="before")
