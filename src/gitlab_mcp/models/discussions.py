@@ -23,7 +23,8 @@ class NoteSummary(BaseGitLabModel):
         default=None, description="When last updated (ISO timestamp)"
     )
     system: bool = Field(default=False, description="True if this is a system-generated note")
-    resolved: bool = Field(default=False, description="True if this note resolves a discussion")
+    resolvable: bool = Field(default=False, description="True if this note can be resolved")
+    resolved: bool = Field(default=False, description="True if this note is resolved")
 
     @model_validator(mode="before")
     @classmethod
@@ -44,6 +45,7 @@ class NoteSummary(BaseGitLabModel):
                 "created_at": getattr(data, "created_at", ""),
                 "updated_at": getattr(data, "updated_at", None),
                 "system": getattr(data, "system", False),
+                "resolvable": getattr(data, "resolvable", False),
                 "resolved": getattr(data, "resolved", False),
             }
         return data
