@@ -58,14 +58,14 @@ def _filter_discussions(
             d.notes = [_truncate_note(notes[0])]
         else:
             skipped = len(notes) - 2
-            placeholder = NoteSummary.model_validate({
-                "id": 0,
-                "body": f"[... {skipped} note(s) skipped — use get_mr_discussion for full thread]",
-                "author": "—",
-                "created_at": "—",
-                "system": False,
-                "resolved": False,
-            })
+            placeholder = NoteSummary.model_construct(
+                id=0,
+                body=f"[... {skipped} note(s) skipped — use get_mr_discussion for full thread]",
+                author="",
+                created_at=None,
+                system=False,
+                resolved=False,
+            )
             d.notes = [_truncate_note(notes[0]), placeholder, _truncate_note(notes[-1])]
         result.append(d)
     return result
