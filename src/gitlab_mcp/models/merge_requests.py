@@ -272,46 +272,41 @@ class MergeRequestNote(BaseGitLabModel):
     """Comment (note) on a merge request."""
 
     id: int = Field(description="Note ID")
-    author_id: int = Field(description="Author user ID")
+    author_id: int = Field(default=0, description="Author user ID")
     author: str = Field(description="Author username")
     created_at: str = Field(description="When created")
     updated_at: str = Field(description="When last updated")
     body: str = Field(description="Note content")
     system: bool = Field(description="Whether this is a system note")
 
-    @field_validator("author_id", mode="before")
+    @model_validator(mode="before")
     @classmethod
-    def extract_author_id(cls, v, info):
-        """Extract author ID from nested author dict."""
-        if isinstance(v, int):
-            return v
-        data = info.data
-        if isinstance(data, dict):
-            author = data.get("author")
-            if author and isinstance(author, dict):
-                return author.get("id", 0)
-        elif hasattr(data, "author"):
-            author = data.author
-            if isinstance(author, dict):
-                return author.get("id", 0)
-        return 0
+    def normalize_author(cls, data):
+        """Extract author_id and author username from nested author dict.
 
-    @field_validator("author", mode="before")
-    @classmethod
-    def extract_author_username(cls, v, info):
-        """Extract author username from nested author dict."""
-        if isinstance(v, str):
-            return v
-        data = info.data
+        Handles both plain dicts (from API responses) and RESTObjects
+        (from python-gitlab, which have no author_id attribute).
+        """
         if isinstance(data, dict):
             author = data.get("author")
-            if author and isinstance(author, dict):
-                return author.get("username", "unknown")
-        elif hasattr(data, "author"):
-            author = data.author
             if isinstance(author, dict):
-                return author.get("username", "unknown")
-        return "unknown"
+                data = dict(data)
+                data.setdefault("author_id", author.get("id", 0))
+                data["author"] = author.get("username", "unknown")
+            return data
+        # RESTObject: author is a nested dict attribute, author_id doesn't exist
+        author = getattr(data, "author", None)
+        if isinstance(author, dict):
+            return {
+                "id": getattr(data, "id", None),
+                "author_id": author.get("id", 0),
+                "author": author.get("username", "unknown"),
+                "created_at": getattr(data, "created_at", ""),
+                "updated_at": getattr(data, "updated_at", ""),
+                "body": getattr(data, "body", ""),
+                "system": getattr(data, "system", False),
+            }
+        return data
 
 
 class MergeRequestVersion(BaseGitLabModel):
