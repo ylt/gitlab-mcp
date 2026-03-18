@@ -17,20 +17,48 @@ from gitlab_mcp.utils.pagination import paginate
 logger = logging.getLogger(__name__)
 
 
+_MAX_BODY_PREVIEW = 200
+
+
+def _truncate_note(note: NoteSummary) -> NoteSummary:
+    """Truncate note body for preview."""
+    if note.body and len(note.body) > _MAX_BODY_PREVIEW:
+        note.body = note.body[:_MAX_BODY_PREVIEW] + "…"
+    return note
+
+
 def _filter_discussions(
     discussions: list[DiscussionSummary],
     include_system: bool,
+    state: str = "all",
+    include_all_notes: bool = False,
 ) -> list[DiscussionSummary]:
-    """Filter discussions: remove system notes and empty discussions."""
-    if include_system:
-        return discussions
-
+    """Filter discussions by system notes, resolution state, and collapse notes."""
     result = []
     for d in discussions:
-        filtered_notes = [n for n in d.notes if not n.system]
-        if filtered_notes:
-            d.notes = filtered_notes
-            result.append(d)
+        notes = d.notes
+
+        if not include_system:
+            notes = [n for n in notes if not n.system]
+
+        if state == "unresolved":
+            if all(n.resolved for n in notes if not n.system):
+                continue
+        elif state == "resolved":
+            if not all(n.resolved for n in notes if not n.system):
+                continue
+
+        if not notes:
+            continue
+
+        d.note_count = len(notes)
+        if include_all_notes:
+            d.notes = notes
+        elif len(notes) == 1:
+            d.notes = [_truncate_note(notes[0])]
+        else:
+            d.notes = [_truncate_note(notes[0]), _truncate_note(notes[-1])]
+        result.append(d)
     return result
 
 
@@ -40,20 +68,25 @@ def mr_discussions(
     mr_iid: int,
     per_page: int = 20,
     include_system: bool = False,
+    state: str = "all",
+    include_all_notes: bool = False,
     raw: bool = False,
 ) -> list[DiscussionSummary] | list[DiscussionDetail]:
     """List discussions/threads on a merge request.
 
-    By default, note bodies are cleaned (HTML comments stripped, <details>
-    blocks collapsed) and system notes are excluded. Use raw=True for
-    full unstripped markdown. To fetch a single discussion with full
-    content, use get_mr_discussion instead.
+    By default shows only the last note per thread with a note_count.
+    Note bodies are cleaned (HTML comments stripped, <details> blocks
+    collapsed) and system notes are excluded. Use raw=True for full
+    unstripped markdown. To fetch a single discussion with full content,
+    use get_mr_discussion instead.
 
     Args:
         project_id: Project ID or path (e.g., "mygroup/myproject")
         mr_iid: Merge request number
         per_page: Items per page (default 20, max 100)
         include_system: Include system-generated notes (default false)
+        state: Filter by resolution: "all", "unresolved", or "resolved"
+        include_all_notes: Show all notes per thread (default false, shows last only)
         raw: Return full unstripped markdown bodies (default false)
     """
     project = get_project(project_id)
@@ -62,7 +95,7 @@ def mr_discussions(
     if raw:
         return DiscussionDetail.from_gitlab(discussions)
     result = DiscussionSummary.from_gitlab(discussions)
-    return _filter_discussions(result, include_system)
+    return _filter_discussions(result, include_system, state, include_all_notes)
 
 
 @mcp.tool(annotations={"title": "Issue Discussions", "readOnlyHint": True, "openWorldHint": True})
@@ -71,11 +104,14 @@ def list_issue_discussions(
     issue_iid: int,
     per_page: int = 20,
     include_system: bool = False,
+    state: str = "all",
+    include_all_notes: bool = False,
     raw: bool = False,
 ) -> list[DiscussionSummary] | list[DiscussionDetail]:
     """List discussions/threads on an issue.
 
-    By default, note bodies are cleaned and system notes are excluded.
+    By default shows only the last note per thread with a note_count.
+    Note bodies are cleaned and system notes are excluded.
     Use raw=True for full unstripped markdown.
 
     Args:
@@ -83,6 +119,8 @@ def list_issue_discussions(
         issue_iid: Issue number
         per_page: Items per page (default 20, max 100)
         include_system: Include system-generated notes (default false)
+        state: Filter by resolution: "all", "unresolved", or "resolved"
+        include_all_notes: Show all notes per thread (default false, shows last only)
         raw: Return full unstripped markdown bodies (default false)
     """
     project = get_project(project_id)
@@ -91,7 +129,7 @@ def list_issue_discussions(
     if raw:
         return DiscussionDetail.from_gitlab(discussions)
     result = DiscussionSummary.from_gitlab(discussions)
-    return _filter_discussions(result, include_system)
+    return _filter_discussions(result, include_system, state, include_all_notes)
 
 
 @mcp.tool(annotations={"title": "Get MR Discussion", "readOnlyHint": True, "openWorldHint": True})

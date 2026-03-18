@@ -88,11 +88,16 @@ class DiscussionDetail(BaseGitLabModel):
 
 
 class DiscussionSummary(BaseGitLabModel):
-    """Discussion thread summary."""
+    """Discussion thread summary.
+
+    By default only shows note_count and the last note. Use
+    include_all_notes=True on the tool to get every note.
+    """
 
     id: str = Field(description="Discussion ID")
+    note_count: int = Field(default=0, description="Total number of notes in discussion")
     notes: list[NoteSummary] = Field(
-        default_factory=list, description="List of notes in discussion"
+        default_factory=list, description="Notes (last note only by default, all if requested)"
     )
     individual_note: bool = Field(default=False, description="True if single comment, not a thread")
 
@@ -117,6 +122,7 @@ class DiscussionSummary(BaseGitLabModel):
 
         return cls.model_validate({
             'id': obj.id,
+            'note_count': len(notes_data),
             'notes': notes_data,
             'individual_note': getattr(obj, 'individual_note', False),
         })
