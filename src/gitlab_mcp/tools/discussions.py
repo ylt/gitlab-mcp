@@ -29,13 +29,31 @@ def _truncate_note(note: NoteSummary) -> NoteSummary:
 
 
 def _parse_newer_than(newer_than: str) -> datetime:
-    """Parse a relative time string like '1h', '2d', '30m' into a cutoff datetime."""
+    """Parse a time filter into a cutoff datetime.
+
+    Accepts:
+        - Relative: "1h", "2d", "30m", "1w"
+        - ISO 8601: "2026-03-16T00:00:00Z"
+    """
+    # Try ISO 8601 first
+    try:
+        dt = datetime.fromisoformat(newer_than.replace("Z", "+00:00"))
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt
+    except ValueError:
+        pass
+
+    # Try relative time
     units = {"m": 60, "h": 3600, "d": 86400, "w": 604800}
-    suffix = newer_than[-1].lower()
-    if suffix not in units:
-        raise ValueError(f"Invalid time unit '{suffix}'. Use m (minutes), h (hours), d (days), w (weeks)")
-    value = int(newer_than[:-1])
-    return datetime.now(timezone.utc) - timedelta(seconds=value * units[suffix])
+    if newer_than and newer_than[-1].lower() in units:
+        try:
+            value = int(newer_than[:-1])
+            return datetime.now(timezone.utc) - timedelta(seconds=value * units[newer_than[-1].lower()])
+        except ValueError:
+            pass
+
+    raise ValueError(f"Invalid newer_than: '{newer_than}'. Use relative (1h, 2d, 30m, 1w) or ISO 8601.")
 
 
 def _note_created_at(note: NoteSummary) -> datetime | None:
