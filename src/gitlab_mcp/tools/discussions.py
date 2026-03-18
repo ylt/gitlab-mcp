@@ -61,8 +61,8 @@ def _filter_discussions(
             placeholder = NoteSummary.model_validate({
                 "id": 0,
                 "body": f"[... {skipped} note(s) skipped — use get_mr_discussion for full thread]",
-                "author": "",
-                "created_at": "",
+                "author": "—",
+                "created_at": "—",
                 "system": False,
                 "resolved": False,
             })
