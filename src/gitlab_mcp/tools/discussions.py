@@ -17,13 +17,13 @@ from gitlab_mcp.utils.pagination import paginate
 logger = logging.getLogger(__name__)
 
 
-_MAX_BODY_PREVIEW = 200
+_MAX_BODY_PREVIEW = 500
 
 
 def _truncate_note(note: NoteSummary) -> NoteSummary:
     """Truncate note body for preview."""
     if note.body and len(note.body) > _MAX_BODY_PREVIEW:
-        note.body = note.body[:_MAX_BODY_PREVIEW] + "…"
+        note.body = note.body[:_MAX_BODY_PREVIEW] + "\n\n[... truncated — use get_mr_discussion for full content]"
     return note
 
 
@@ -57,7 +57,16 @@ def _filter_discussions(
         elif len(notes) == 1:
             d.notes = [_truncate_note(notes[0])]
         else:
-            d.notes = [_truncate_note(notes[0]), _truncate_note(notes[-1])]
+            skipped = len(notes) - 2
+            placeholder = NoteSummary.model_validate({
+                "id": 0,
+                "body": f"[... {skipped} note(s) skipped — use get_mr_discussion for full thread]",
+                "author": "",
+                "created_at": "",
+                "system": False,
+                "resolved": False,
+            })
+            d.notes = [_truncate_note(notes[0]), placeholder, _truncate_note(notes[-1])]
         result.append(d)
     return result
 
