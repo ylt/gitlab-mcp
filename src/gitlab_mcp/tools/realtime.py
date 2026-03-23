@@ -1,6 +1,7 @@
 """Real-time event subscription tools."""
 
 from fastmcp.server.context import Context
+from mcp.types import ClientCapabilities
 
 from gitlab_mcp.server import mcp
 from gitlab_mcp.client import get_project
@@ -15,9 +16,22 @@ def set_manager(manager: ActionCableManager) -> None:
     _manager = manager
 
 
+def _check_channel_support(ctx: Context) -> None:
+    """Raise if the client doesn't support Channel notifications."""
+    supported = ctx.session.check_client_capability(
+        ClientCapabilities(experimental={"claude/channel": {}})
+    )
+    if not supported:
+        raise RuntimeError(
+            "This tool requires MCP Channel support (experimental: claude/channel). "
+            "Your client does not advertise this capability."
+        )
+
+
 def _get_manager(ctx: Context) -> ActionCableManager:
     if _manager is None:
         raise RuntimeError("Real-time manager not initialized")
+    _check_channel_support(ctx)
     # Ensure the manager has the session for pushing notifications
     if _manager._session is None:
         _manager.set_session(ctx.session)
