@@ -5,9 +5,9 @@ from pydantic import Field, model_validator
 from gitlab_mcp.models.base import (
     BaseGitLabModel,
     HtmlCommentFree,
+    RawClean,
     RelativeTime,
     RelativeTimeOptional,
-    SafeString,
 )
 
 
@@ -53,7 +53,7 @@ class NoteSummary(BaseGitLabModel):
 class NoteDetail(NoteSummary):
     """Full note with unstripped body for individual fetches."""
 
-    body: SafeString = Field(description="Full comment text (unstripped)")
+    body: RawClean = Field(description="Full comment text (long HTML comments stripped)")
 
 
 class DiscussionDetail(BaseGitLabModel):

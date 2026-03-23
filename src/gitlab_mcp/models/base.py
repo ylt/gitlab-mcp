@@ -195,11 +195,23 @@ _DETAILS_BLOCK_RE = re.compile(
 )
 _DETAILS_NO_SUMMARY_RE = re.compile(r"<details>.*?</details>", re.DOTALL)
 
+# HTML comments longer than this are stripped even in raw mode
+_MAX_HTML_COMMENT_LENGTH = 200
+
 
 def _replace_details(match: re.Match) -> str:
     """Replace <details> block with HTML comment keeping summary text."""
     summary = match.group(1).strip()
     return f"<!-- collapsed: {summary} -->"
+
+
+def _strip_long_html_comments(text: str, max_length: int = _MAX_HTML_COMMENT_LENGTH) -> str:
+    """Strip HTML comments that exceed max_length, keeping short ones."""
+    def _replace_if_long(match: re.Match) -> str:
+        if len(match.group(0)) > max_length:
+            return ""
+        return match.group(0)
+    return _HTML_COMMENT_RE.sub(_replace_if_long, text)
 
 
 def clean_note_body(text: str | None) -> str:
@@ -214,8 +226,23 @@ def clean_note_body(text: str | None) -> str:
     return result.strip()
 
 
+def clean_note_body_raw(text: str | None) -> str:
+    """Light cleaning for raw mode: only strip long HTML comments."""
+    if not text:
+        return ""
+    result = _strip_long_html_comments(text)
+    result = re.sub(r"\n{3,}", "\n\n", result)
+    return result.strip()
+
+
 # Type alias for note body fields: strips HTML comments and <details> blocks
 HtmlCommentFree = Annotated[
     str | None,
     PlainSerializer(lambda v: clean_note_body(v), return_type=str),
+]
+
+# Type alias for raw mode: strips only long HTML comments (>200 chars)
+RawClean = Annotated[
+    str | None,
+    PlainSerializer(lambda v: clean_note_body_raw(v), return_type=str),
 ]
