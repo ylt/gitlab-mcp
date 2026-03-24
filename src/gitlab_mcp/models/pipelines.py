@@ -60,6 +60,9 @@ class JobSummary(BaseGitLabModel):
     @classmethod
     def extract_artifacts(cls, v):
         """Extract artifact filenames from artifact objects."""
+        if callable(v):
+            # from_attributes=True reads the .artifacts manager method, not a list
+            return None
         if not v:
             return None
         if isinstance(v, list) and len(v) > 0 and isinstance(v[0], dict):

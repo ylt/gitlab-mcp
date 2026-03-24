@@ -265,8 +265,10 @@ def get_job_log(
     project = get_project(project_id)
     job = project.jobs.get(job_id)
 
-    # Get full log
+    # Get full log (trace() returns bytes)
     raw_log = job.trace()
+    if isinstance(raw_log, bytes):
+        raw_log = raw_log.decode("utf-8", errors="replace")
 
     # Split into lines
     lines = raw_log.splitlines()
