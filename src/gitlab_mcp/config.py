@@ -20,6 +20,7 @@ class Config:
     disable_wiki: bool = False
     disable_releases: bool = False
     disable_graphql: bool = False
+    disable_realtime: bool = True
 
     @classmethod
     def from_env(cls) -> "Config":
@@ -45,6 +46,7 @@ class Config:
         disable_wiki = os.environ.get("GITLAB_DISABLE_WIKI", "").lower() == "true"
         disable_releases = os.environ.get("GITLAB_DISABLE_RELEASES", "").lower() == "true"
         disable_graphql = os.environ.get("GITLAB_DISABLE_GRAPHQL", "").lower() == "true"
+        disable_realtime = os.environ.get("GITLAB_DISABLE_REALTIME", "true").lower() != "false"
 
         return cls(
             gitlab_url=url,
@@ -59,6 +61,7 @@ class Config:
             disable_wiki=disable_wiki,
             disable_releases=disable_releases,
             disable_graphql=disable_graphql,
+            disable_realtime=disable_realtime,
         )
 
 

@@ -1,20 +1,26 @@
 """FastMCP server for GitLab."""
 
-from contextlib import asynccontextmanager
-
 from fastmcp import FastMCP
 from gitlab_mcp.config import get_config
 
+# Load configuration for dynamic tool loading
+config = get_config()
 
-@asynccontextmanager
-async def lifespan(server):
-    """Server lifespan — clean up per-session managers on shutdown."""
-    try:
-        yield
-    finally:
-        from gitlab_mcp.tools.realtime import cleanup_all_managers
-        await cleanup_all_managers()
+if not config.disable_realtime:
+    from contextlib import asynccontextmanager
 
+    @asynccontextmanager
+    async def lifespan(server):
+        """Server lifespan — clean up per-session managers on shutdown."""
+        try:
+            yield
+        finally:
+            from gitlab_mcp.tools.realtime import cleanup_all_managers
+            await cleanup_all_managers()
+
+    _lifespan = lifespan
+else:
+    _lifespan = None
 
 # Create the MCP server
 mcp = FastMCP(
@@ -22,29 +28,25 @@ mcp = FastMCP(
     instructions="""GitLab MCP server providing tools to interact with GitLab repositories,
     merge requests, issues, pipelines, and more. Responses are optimized for AI consumption
     with relevant context and human-readable formatting.""",
-    lifespan=lifespan,
+    lifespan=_lifespan,
 )
 
-# Swap FastMCP's session class with ours for per-session cleanup support.
-import fastmcp.server.low_level as _ll  # noqa: E402
-from gitlab_mcp.session import GitLabServerSession  # noqa: E402
-_ll.MiddlewareServerSession = GitLabServerSession
+if not config.disable_realtime:
+    # Swap FastMCP's session class with ours for per-session cleanup support.
+    import fastmcp.server.low_level as _ll  # noqa: E402
+    from gitlab_mcp.session import GitLabServerSession  # noqa: E402
+    _ll.MiddlewareServerSession = GitLabServerSession
 
-# Inject Channel capability so Claude Code treats this as a channel-capable server.
-# The MCP SDK doesn't have native channel support yet, so we patch get_capabilities
-# to merge our experimental capability into the response.
-_orig_get_capabilities = mcp._mcp_server.get_capabilities
+    # Inject Channel capability so Claude Code treats this as a channel-capable server.
+    # The MCP SDK doesn't have native channel support yet, so we patch get_capabilities
+    # to merge our experimental capability into the response.
+    _orig_get_capabilities = mcp._mcp_server.get_capabilities
 
+    def _patched_get_capabilities(notification_options, experimental_capabilities=None):
+        merged = {**(experimental_capabilities or {}), "claude/channel": {}}
+        return _orig_get_capabilities(notification_options, merged)
 
-def _patched_get_capabilities(notification_options, experimental_capabilities=None):
-    merged = {**(experimental_capabilities or {}), "claude/channel": {}}
-    return _orig_get_capabilities(notification_options, merged)
-
-
-mcp._mcp_server.get_capabilities = _patched_get_capabilities
-
-# Load configuration for dynamic tool loading
-config = get_config()
+    mcp._mcp_server.get_capabilities = _patched_get_capabilities
 
 # Import core tool modules (always loaded)
 from gitlab_mcp.tools import merge_requests  # noqa: F401, E402
@@ -60,7 +62,9 @@ from gitlab_mcp.tools import users  # noqa: F401, E402
 from gitlab_mcp.tools import draft_notes  # noqa: F401, E402
 from gitlab_mcp.tools import uploads  # noqa: F401, E402
 from gitlab_mcp.tools import iterations  # noqa: F401, E402
-from gitlab_mcp.tools import realtime  # noqa: F401, E402
+
+if not config.disable_realtime:
+    from gitlab_mcp.tools import realtime  # noqa: F401, E402
 
 # Conditionally import optional tool modules based on config
 if not config.disable_wiki:
