@@ -46,14 +46,6 @@ class MergeRequestSummary(BaseGitLabModel):
     _merge_status: str | None = None
     _detailed_merge_status: str | None = None
 
-    @field_validator("description", mode="after")
-    @classmethod
-    def truncate_description(cls, v: str) -> str:
-        """Truncate description to 200 chars for list views."""
-        if len(v) > 200:
-            return v[:197] + "..."
-        return v
-
     @model_validator(mode="before")
     @classmethod
     def extract_approval_data(cls, data: Any) -> Any:
