@@ -67,6 +67,8 @@ class JobSummary(BaseGitLabModel):
             return None
         if isinstance(v, list) and len(v) > 0 and isinstance(v[0], dict):
             return [artifact.get("file_format", artifact.get("filename", "")) for artifact in v]
+        if isinstance(v, list):
+            return [a for a in v if a is not None]
         return v
 
     @field_serializer("artifacts")
