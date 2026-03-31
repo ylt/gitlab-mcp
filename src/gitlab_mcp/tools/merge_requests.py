@@ -528,7 +528,7 @@ def list_merge_request_diffs(
     mr = project.mergerequests.get(mr_iid)
     diffs = mr.diffs.list(per_page=limit)
 
-    return MergeRequestDiff.from_gitlab(diffs)
+    return [MergeRequestDiff.model_validate(d.attributes) for d in diffs]
 
 
 @mcp.tool(
@@ -547,8 +547,8 @@ def list_merge_request_versions(project_id: str, mr_iid: int) -> list[MergeReque
     """
     project = get_project(project_id)
     mr = project.mergerequests.get(mr_iid)
-    versions = mr.versions.list()
-    return MergeRequestVersion.from_gitlab(versions)
+    versions = mr.diffs.list()
+    return [MergeRequestVersion.model_validate(v.attributes) for v in versions]
 
 
 @mcp.tool(
@@ -572,8 +572,8 @@ def get_merge_request_version(
     """
     project = get_project(project_id)
     mr = project.mergerequests.get(mr_iid)
-    version = mr.versions.get(version_id)
-    return MergeRequestVersion.from_gitlab(version)
+    version = mr.diffs.get(version_id)
+    return MergeRequestVersion.model_validate(version.attributes)
 
 
 @mcp.tool(
@@ -597,4 +597,4 @@ def get_merge_request_diffs(
     mr = project.mergerequests.get(mr_iid)
     diffs = mr.diffs.list(get_all=True)
 
-    return MergeRequestDiff.from_gitlab(diffs)
+    return [MergeRequestDiff.model_validate(d.attributes) for d in diffs]
