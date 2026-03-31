@@ -8,22 +8,12 @@ from gitlab_mcp.config import get_config
 
 @asynccontextmanager
 async def lifespan(server):
-    """Manage the Action Cable WebSocket connection lifecycle."""
-    from gitlab_mcp.realtime import ActionCableManager
-    from gitlab_mcp.tools.realtime import set_manager
-
-    config = get_config()
-    manager = ActionCableManager(
-        gitlab_url=config.gitlab_url,
-        token=config.oauth_token or config.token,
-    )
-    set_manager(manager)
-
+    """Server lifespan — clean up per-session managers on shutdown."""
     try:
         yield
     finally:
-        await manager.close()
-        set_manager(None)
+        from gitlab_mcp.tools.realtime import cleanup_all_managers
+        await cleanup_all_managers()
 
 
 # Create the MCP server
@@ -34,6 +24,11 @@ mcp = FastMCP(
     with relevant context and human-readable formatting.""",
     lifespan=lifespan,
 )
+
+# Swap FastMCP's session class with ours for per-session cleanup support.
+import fastmcp.server.low_level as _ll  # noqa: E402
+from gitlab_mcp.session import GitLabServerSession  # noqa: E402
+_ll.MiddlewareServerSession = GitLabServerSession
 
 # Inject Channel capability so Claude Code treats this as a channel-capable server.
 # The MCP SDK doesn't have native channel support yet, so we patch get_capabilities
