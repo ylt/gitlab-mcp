@@ -265,11 +265,9 @@ def get_job_log(
     project = get_project(project_id)
     job = project.jobs.get(job_id)
 
-    # Get full log (trace() returns bytes or None if no log available)
+    # Get full log (trace() returns bytes)
     raw_log = job.trace()
-    if raw_log is None:
-        raw_log = ""
-    elif isinstance(raw_log, bytes):
+    if isinstance(raw_log, bytes):
         raw_log = raw_log.decode("utf-8", errors="replace")
 
     # Split into lines
@@ -289,7 +287,7 @@ def get_job_log(
         log_output += f"\n\n[truncated: {total_lines - max_lines} more lines]"
     else:
         shown_lines = lines
-        log_output = "\n".join(shown_lines)
+        log_output = "\n".join(shown_lines) if shown_lines else "[no matching lines]"
 
     return JobLogResult.model_validate({
         "job_id": job_id,
