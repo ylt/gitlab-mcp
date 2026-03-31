@@ -64,7 +64,7 @@ def list_directory(
     """
     project = get_project(project_id)
     items: Any = project.repository_tree(path=path, ref=ref)
-    return FileSummary.from_gitlab(items)
+    return [FileSummary.model_validate(item) for item in items]
 
 
 @mcp.tool(
@@ -260,7 +260,7 @@ def search_repositories(
             "name": p.name,
             "description": p.description or "",
             "url": p.web_url,
-            "default_branch": p.default_branch,
+            "default_branch": getattr(p, "default_branch", None),
         }
         for p in projects
     ]
@@ -283,7 +283,7 @@ def get_repository_tree(
     """
     project = get_project(project_id)
     items = project.repository_tree(path=path, ref=ref, recursive=recursive)
-    return FileSummary.from_gitlab(items)
+    return [FileSummary.model_validate(item) for item in items]
 
 
 @mcp.tool(
