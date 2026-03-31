@@ -137,6 +137,7 @@ def mr_discussions(
     project_id: str,
     mr_iid: int,
     per_page: int = 20,
+    page: int = 1,
     include_system: bool = False,
     newer_than: str | None = None,
     include_all_notes: bool = False,
@@ -154,6 +155,7 @@ def mr_discussions(
         project_id: Project ID or path (e.g., "mygroup/myproject")
         mr_iid: Merge request number
         per_page: Items per page (default 20, max 100)
+        page: Page number (default 1)
         include_system: Include system-generated notes (default false)
         newer_than: Only include discussions with activity newer than this (e.g. "1h", "2d", "30m", "1w")
         include_all_notes: Show all notes per thread (default false, shows first+last only)
@@ -161,7 +163,7 @@ def mr_discussions(
     """
     project = get_project(project_id)
     mr = project.mergerequests.get(mr_iid)
-    discussions = paginate(mr.discussions, per_page=per_page)
+    discussions = paginate(mr.discussions, per_page=per_page, page=page)
     if raw:
         return DiscussionDetail.from_gitlab(discussions)
     result = DiscussionSummary.from_gitlab(discussions)
@@ -173,6 +175,7 @@ def list_issue_discussions(
     project_id: str,
     issue_iid: int,
     per_page: int = 20,
+    page: int = 1,
     include_system: bool = False,
     newer_than: str | None = None,
     include_all_notes: bool = False,
@@ -188,6 +191,7 @@ def list_issue_discussions(
         project_id: Project ID or path
         issue_iid: Issue number
         per_page: Items per page (default 20, max 100)
+        page: Page number (default 1)
         include_system: Include system-generated notes (default false)
         newer_than: Only include discussions with activity newer than this (e.g. "1h", "2d", "30m", "1w")
         include_all_notes: Show all notes per thread (default false, shows first+last only)
@@ -195,7 +199,7 @@ def list_issue_discussions(
     """
     project = get_project(project_id)
     issue = project.issues.get(issue_iid)
-    discussions = paginate(issue.discussions, per_page=per_page)
+    discussions = paginate(issue.discussions, per_page=per_page, page=page)
     if raw:
         return DiscussionDetail.from_gitlab(discussions)
     result = DiscussionSummary.from_gitlab(discussions)
