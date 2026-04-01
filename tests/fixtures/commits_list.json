@@ -1,0 +1,105 @@
+[
+  {
+    "project_id": "278964",
+    "id": "3aa0a9d772697316968905c014c00ad94bee9f33",
+    "short_id": "3aa0a9d7",
+    "created_at": "2026-04-01T12:48:00.000-04:00",
+    "parent_ids": [
+      "d147bf838eb61a1c5443e37d6df2505e32262ddd",
+      "d42bdd6b9422210887c3f42cc2e6393f67661ee2"
+    ],
+    "title": "Merge branch 'docs-simplify-titles' into 'master' ",
+    "message": "Merge branch 'docs-simplify-titles' into 'master' \n\nImprove search results by dropping 'GitLab' when not needed\n\nSee merge request https://gitlab.com/gitlab-org/gitlab/-/merge_requests/229778\n\nMerged-by: Lysanne Pinto <lpinto@gitlab.com>\nApproved-by: Lysanne Pinto <lpinto@gitlab.com>\nReviewed-by: GitLab Duo <gitlab-duo@gitlab.com>\nCo-authored-by: Marcel Amirault <mamirault@gitlab.com>",
+    "author_name": "Lysanne Pinto",
+    "author_email": "lpinto@gitlab.com",
+    "authored_date": "2026-04-01T12:48:00.000-04:00",
+    "committer_name": "GitLab",
+    "committer_email": "noreply@gitlab.com",
+    "committed_date": "2026-04-01T12:48:00.000-04:00",
+    "trailers": {},
+    "extended_trailers": {},
+    "web_url": "https://gitlab.com/gitlab-org/gitlab/-/commit/3aa0a9d772697316968905c014c00ad94bee9f33"
+  },
+  {
+    "project_id": "278964",
+    "id": "d147bf838eb61a1c5443e37d6df2505e32262ddd",
+    "short_id": "d147bf83",
+    "created_at": "2026-04-01T09:46:37.000-07:00",
+    "parent_ids": [
+      "f7b1241ab4d779cec2410dc95882af4c62f3d99d",
+      "59c03d42a169d29df225392a04ee4574a585f4b8"
+    ],
+    "title": "Merge branch 'docs-i18n/upstream-batch-push-2026-03-10-09' into 'master' ",
+    "message": "Merge branch 'docs-i18n/upstream-batch-push-2026-03-10-09' into 'master' \n\nAI Translated Documentation Push: GITTECHA-616\n\nSee merge request https://gitlab.com/gitlab-org/gitlab/-/merge_requests/229361\n\nMerged-by: Lauren Barker <lbarker@gitlab.com>\nApproved-by: Maria Jose Salmeron Ib\u00e1\u00f1ez <mjsibanez@gitlab.com>\nApproved-by: Lauren Barker <lbarker@gitlab.com>\nReviewed-by: GitLab Duo <gitlab-duo@gitlab.com>\nCo-authored-by: Kevin Lew <kevin@spartansoftwareinc.com>",
+    "author_name": "Lauren Barker",
+    "author_email": "lbarker@gitlab.com",
+    "authored_date": "2026-04-01T09:46:37.000-07:00",
+    "committer_name": "GitLab",
+    "committer_email": "noreply@gitlab.com",
+    "committed_date": "2026-04-01T09:46:37.000-07:00",
+    "trailers": {},
+    "extended_trailers": {},
+    "web_url": "https://gitlab.com/gitlab-org/gitlab/-/commit/d147bf838eb61a1c5443e37d6df2505e32262ddd"
+  },
+  {
+    "project_id": "278964",
+    "id": "59c03d42a169d29df225392a04ee4574a585f4b8",
+    "short_id": "59c03d42",
+    "created_at": "2026-04-01T09:46:34.000-07:00",
+    "parent_ids": [
+      "05c9955f328e7a8cbadc50d3cbad45b3255968b6"
+    ],
+    "title": "GITTECHA-616 Japanese Docs Translations",
+    "message": "GITTECHA-616 Japanese Docs Translations\n\nUpdates the following file with the latest AI translations from Argo\ndoc-locale/ja-jp/user/project/repository/knowledge_graph/_index.md\n",
+    "author_name": "Kevin Lew",
+    "author_email": "klew-ext@gitlab.com",
+    "authored_date": "2026-04-01T09:46:34.000-07:00",
+    "committer_name": "GitLab",
+    "committer_email": "noreply@gitlab.com",
+    "committed_date": "2026-04-01T09:46:34.000-07:00",
+    "trailers": {},
+    "extended_trailers": {},
+    "web_url": "https://gitlab.com/gitlab-org/gitlab/-/commit/59c03d42a169d29df225392a04ee4574a585f4b8"
+  },
+  {
+    "project_id": "278964",
+    "id": "f7b1241ab4d779cec2410dc95882af4c62f3d99d",
+    "short_id": "f7b1241a",
+    "created_at": "2026-04-01T09:46:01.000-07:00",
+    "parent_ids": [
+      "bbde5ce210a8ced7afbdad815e0e43aab3e4b45d",
+      "86080ac35e79b0ab0bd2acfd76f6ad1b6f18d698"
+    ],
+    "title": "Merge branch 'docs-i18n/upstream-batch-push-2026-03-10-02' into 'master' ",
+    "message": "Merge branch 'docs-i18n/upstream-batch-push-2026-03-10-02' into 'master' \n\nAI Translated Documentation Push: GITTECHA-607\n\nSee merge request https://gitlab.com/gitlab-org/gitlab/-/merge_requests/228940\n\nMerged-by: Lauren Barker <lbarker@gitlab.com>\nApproved-by: Maria Jose Salmeron Ib\u00e1\u00f1ez <mjsibanez@gitlab.com>\nApproved-by: Lauren Barker <lbarker@gitlab.com>\nReviewed-by: GitLab Duo <gitlab-duo@gitlab.com>\nCo-authored-by: Kevin Lew <kevin@spartansoftwareinc.com>",
+    "author_name": "Lauren Barker",
+    "author_email": "lbarker@gitlab.com",
+    "authored_date": "2026-04-01T09:46:01.000-07:00",
+    "committer_name": "GitLab",
+    "committer_email": "noreply@gitlab.com",
+    "committed_date": "2026-04-01T09:46:01.000-07:00",
+    "trailers": {},
+    "extended_trailers": {},
+    "web_url": "https://gitlab.com/gitlab-org/gitlab/-/commit/f7b1241ab4d779cec2410dc95882af4c62f3d99d"
+  },
+  {
+    "project_id": "278964",
+    "id": "86080ac35e79b0ab0bd2acfd76f6ad1b6f18d698",
+    "short_id": "86080ac3",
+    "created_at": "2026-04-01T09:45:55.000-07:00",
+    "parent_ids": [
+      "a519178dbcd2159c82f989fd9d252e4534d4d656"
+    ],
+    "title": "GITTECHA-607 Japanese Docs Translations",
+    "message": "GITTECHA-607 Japanese Docs Translations\n\nUpdates the following file with the latest AI translations from Argo\n...inistration/gitlab_duo_self_hosted/supported_llm_serving_platforms.md\n",
+    "author_name": "Kevin Lew",
+    "author_email": "klew-ext@gitlab.com",
+    "authored_date": "2026-04-01T09:45:55.000-07:00",
+    "committer_name": "GitLab",
+    "committer_email": "noreply@gitlab.com",
+    "committed_date": "2026-04-01T09:45:55.000-07:00",
+    "trailers": {},
+    "extended_trailers": {},
+    "web_url": "https://gitlab.com/gitlab-org/gitlab/-/commit/86080ac35e79b0ab0bd2acfd76f6ad1b6f18d698"
+  }
+]

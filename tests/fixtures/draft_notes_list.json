@@ -1,0 +1,17 @@
+[
+  {
+    "id": 1,
+    "author_id": 12345,
+    "merge_request_id": 229854,
+    "note": "This is a draft note.",
+    "body": "This is a draft note.",
+    "internal": false,
+    "resolve_discussion": false,
+    "discussion_id": null,
+    "line_code": null,
+    "commit_id": null,
+    "position": null,
+    "in_reply_to_discussion_id": null,
+    "created_at": "2024-01-01T00:00:00.000Z"
+  }
+]

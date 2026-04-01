@@ -1,0 +1,37 @@
+{
+  "tag_name": "v18.10.0-ee",
+  "name": "GitLab 18.10",
+  "description": "![30 new features](https://img.shields.io/static/v1?color=108548&label=new+features&labelColor=525252&message=30&style=for-the-badge \"New features added in this release\")\n![4020 total badges](https://",
+  "created_at": "2026-03-19T16:16:45.575Z",
+  "released_at": "2026-03-19T00:00:00.000Z",
+  "upcoming_release": false,
+  "author": {
+    "id": 1786152,
+    "name": "\ud83e\udd16 GitLab Bot \ud83e\udd16",
+    "username": "gitlab-bot"
+  },
+  "_links": {
+    "closed_issues_url": "https://gitlab.com/gitlab-org/gitlab/-/issues?release_tag=v18.10.0-ee&scope=all&state=closed",
+    "closed_merge_requests_url": "https://gitlab.com/gitlab-org/gitlab/-/merge_requests?release_tag=v18.10.0-ee&scope=all&state=closed",
+    "merged_merge_requests_url": "https://gitlab.com/gitlab-org/gitlab/-/merge_requests?release_tag=v18.10.0-ee&scope=all&state=merged",
+    "opened_issues_url": "https://gitlab.com/gitlab-org/gitlab/-/issues?release_tag=v18.10.0-ee&scope=all&state=opened",
+    "opened_merge_requests_url": "https://gitlab.com/gitlab-org/gitlab/-/merge_requests?release_tag=v18.10.0-ee&scope=all&state=opened",
+    "self": "https://gitlab.com/gitlab-org/gitlab/-/releases/v18.10.0-ee"
+  },
+  "assets": {
+    "count": 5,
+    "sources": [
+      {
+        "format": "zip",
+        "url": "https://gitlab.com/gitlab-org/gitlab/-/archive/v18.10.0-ee/gitlab-v18.10.0-ee.zip"
+      },
+      {
+        "format": "tar.gz",
+        "url": "https://gitlab.com/gitlab-org/gitlab/-/archive/v18.10.0-ee/gitlab-v18.10.0-ee.tar.gz"
+      }
+    ],
+    "links": []
+  },
+  "milestones": [],
+  "commit": null
+}

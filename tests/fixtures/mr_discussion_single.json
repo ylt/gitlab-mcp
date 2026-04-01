@@ -1,0 +1,37 @@
+{
+  "project_id": "278964",
+  "mr_iid": "229854",
+  "id": "c7b8e5ca640638057f1df63c0c224db559419800",
+  "individual_note": true,
+  "resolvable": false,
+  "notes": [
+    {
+      "id": 3213666520,
+      "type": null,
+      "body": "requested review from @GitLabDuo",
+      "author": {
+        "id": 21446049,
+        "username": "vwolanyk",
+        "public_email": "",
+        "name": "Vlad Wolanyk",
+        "state": "active",
+        "locked": false,
+        "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/21446049/avatar.png",
+        "web_url": "https://gitlab.com/vwolanyk"
+      },
+      "created_at": "2026-04-01T14:38:42.102Z",
+      "updated_at": "2026-04-01T14:38:42.107Z",
+      "system": true,
+      "noteable_id": 469700090,
+      "noteable_type": "MergeRequest",
+      "project_id": 278964,
+      "resolvable": false,
+      "confidential": false,
+      "internal": false,
+      "imported": false,
+      "imported_from": "none",
+      "noteable_iid": 229854,
+      "commands_changes": {}
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+[
+  {
+    "project_id": "278964",
+    "id": 16558712,
+    "name": "#field-fyi",
+    "description": "Earmarked to notify the sales team of issue updates.",
+    "text_color": "#FFFFFF",
+    "description_html": "Earmarked to notify the sales team of issue updates.",
+    "color": "#34495E",
+    "archived": false,
+    "subscribed": false,
+    "priority": null,
+    "is_project_label": false
+  },
+  {
+    "project_id": "278964",
+    "id": 46780613,
+    "name": "-workflow::ready for development",
+    "description": "",
+    "text_color": "#FFFFFF",
+    "description_html": "",
+    "color": "#6699cc",
+    "archived": false,
+    "subscribed": false,
+    "priority": null,
+    "is_project_label": true
+  },
+  {
+    "project_id": "278964",
+    "id": 42745071,
+    "name": "18.5",
+    "description": "",
+    "text_color": "#FFFFFF",
+    "description_html": "",
+    "color": "#6699cc",
+    "archived": false,
+    "subscribed": false,
+    "priority": null,
+    "is_project_label": false
+  },
+  {
+    "project_id": "278964",
+    "id": 8745578,
+    "name": "1st contribution",
+    "description": "First contribution from a community member",
+    "text_color": "#FFFFFF",
+    "description_html": "First contribution from a community member",
+    "color": "#428BCA",
+    "archived": false,
+    "subscribed": false,
+    "priority": null,
+    "is_project_label": false
+  },
+  {
+    "project_id": "278964",
+    "id": 21333869,
+    "name": "2021-db-training",
+    "description": "Issues that you want to look with the trainer and other trainees in the working sessions of 2021 PostgreSQL database training",
+    "text_color": "#FFFFFF",
+    "description_html": "Issues that you want to look with the trainer and other trainees in the working sessions of 2021 PostgreSQL database training",
+    "color": "#cc338b",
+    "archived": false,
+    "subscribed": false,
+    "priority": null,
+    "is_project_label": false
+  }
+]

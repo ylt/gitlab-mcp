@@ -1,0 +1,41 @@
+[
+  {
+    "diff": "@@ -2,7 +2,7 @@\n stage: Verify\n group: Runner Core\n info: To determine the technical writer assigned to the Stage/Group associated with this page, see <https://handbook.gitlab.com/handbook/product/ux/technical-writing/#assignments>\n-title: GitLab ChatOps\n+title: ChatOps\n ---\n \n {{< details >}}\n",
+    "collapsed": false,
+    "too_large": false,
+    "new_path": "doc/ci/chatops/_index.md",
+    "old_path": "doc/ci/chatops/_index.md",
+    "a_mode": "100644",
+    "b_mode": "100644",
+    "new_file": false,
+    "renamed_file": false,
+    "deleted_file": false,
+    "generated_file": null
+  },
+  {
+    "diff": "@@ -2,8 +2,8 @@\n stage: Verify\n group: Pipeline Execution\n info: To determine the technical writer assigned to the Stage/Group associated with this page, see <https://handbook.gitlab.com/handbook/product/ux/technical-writing/#assignments>\n-title: GitLab CI/CD for external repositories\n-description: GitHub, Bitbucket, external sources, mirroring, and cross-platform.\n+title: CI/CD for external repositories\n+description: Use GitLab CI/CD with GitHub, Bitbucket, and other external repositories.\n ---\n \n {{< details >}}\n",
+    "collapsed": false,
+    "too_large": false,
+    "new_path": "doc/ci/ci_cd_for_external_repos/_index.md",
+    "old_path": "doc/ci/ci_cd_for_external_repos/_index.md",
+    "a_mode": "100644",
+    "b_mode": "100644",
+    "new_file": false,
+    "renamed_file": false,
+    "deleted_file": false,
+    "generated_file": null
+  },
+  {
+    "diff": "@@ -2,7 +2,7 @@\n stage: Verify\n group: Pipeline Execution\n info: To determine the technical writer assigned to the Stage/Group associated with this page, see <https://handbook.gitlab.com/handbook/product/ux/technical-writing/#assignments>\n-title: GitLab CI/CD examples\n+title: CI/CD examples\n ---\n \n {{< details >}}\n",
+    "collapsed": false,
+    "too_large": false,
+    "new_path": "doc/ci/examples/_index.md",
+    "old_path": "doc/ci/examples/_index.md",
+    "a_mode": "100644",
+    "b_mode": "100644",
+    "new_file": false,
+    "renamed_file": false,
+    "deleted_file": false,
+    "generated_file": null
+  }
+]

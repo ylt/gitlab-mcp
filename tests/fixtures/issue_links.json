@@ -1,0 +1,16 @@
+[
+  {
+    "id": 999,
+    "iid": 12345,
+    "project_id": 278964,
+    "title": "Linked issue title",
+    "state": "opened",
+    "description": "A linked issue",
+    "created_at": "2024-01-01T00:00:00.000Z",
+    "updated_at": "2024-01-02T00:00:00.000Z",
+    "web_url": "https://gitlab.com/gitlab-org/gitlab/-/issues/12345",
+    "link_type": "relates_to",
+    "target_project_id": 278964,
+    "target_issue_iid": 12345
+  }
+]

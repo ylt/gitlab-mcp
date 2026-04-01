@@ -1,0 +1,19 @@
+{
+  "id": 469700090,
+  "iid": 229854,
+  "project_id": 278964,
+  "title": "[OpenAPI3] Remove legacy spec",
+  "approved": true,
+  "approved_by": [
+    {
+      "id": 5833976,
+      "username": "mwoolf",
+      "name": "Max Woolf"
+    }
+  ],
+  "approvals_required": 1,
+  "approvals_left": 0,
+  "approval_rules_overwritten": null,
+  "merge_status": "can_be_merged",
+  "approvals_before_merge": null
+}

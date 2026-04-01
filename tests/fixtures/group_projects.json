@@ -1,0 +1,65 @@
+[
+  {
+    "id": 79457252,
+    "name": "GitLab Jira Forge",
+    "path": "gitlab-jira-forge",
+    "path_with_namespace": "gitlab-org/gitlab-jira-forge",
+    "description": "",
+    "visibility": "public",
+    "web_url": "https://gitlab.com/gitlab-org/gitlab-jira-forge",
+    "default_branch": "main",
+    "created_at": "2026-02-13T06:34:56.422Z",
+    "namespace": {
+      "id": 9970,
+      "name": "GitLab.org",
+      "path": "gitlab-org",
+      "kind": "group",
+      "full_path": "gitlab-org",
+      "parent_id": null,
+      "avatar_url": "/uploads/-/system/group/avatar/9970/project_avatar.png",
+      "web_url": "https://gitlab.com/groups/gitlab-org"
+    }
+  },
+  {
+    "id": 78255993,
+    "name": "caproni",
+    "path": "caproni",
+    "path_with_namespace": "gitlab-org/caproni",
+    "description": "Caproni is an alternative development toolkit for developing GitLab that uses Cloud Native GitLab Charts and Kubernetes in the development process.",
+    "visibility": "public",
+    "web_url": "https://gitlab.com/gitlab-org/caproni",
+    "default_branch": "main",
+    "created_at": "2026-02-05T11:06:57.522Z",
+    "namespace": {
+      "id": 9970,
+      "name": "GitLab.org",
+      "path": "gitlab-org",
+      "kind": "group",
+      "full_path": "gitlab-org",
+      "parent_id": null,
+      "avatar_url": "/uploads/-/system/group/avatar/9970/project_avatar.png",
+      "web_url": "https://gitlab.com/groups/gitlab-org"
+    }
+  },
+  {
+    "id": 75577641,
+    "name": "Duo Agent Platform Feature Matrix",
+    "path": "duo-agent-platform-feature-matrix",
+    "path_with_namespace": "gitlab-com/cs-tools/gitlab-cs-tools/duo-agent-platform-feature-matrix",
+    "description": null,
+    "visibility": "public",
+    "web_url": "https://gitlab.com/gitlab-com/cs-tools/gitlab-cs-tools/duo-agent-platform-feature-matrix",
+    "default_branch": "main",
+    "created_at": "2025-10-24T17:31:12.789Z",
+    "namespace": {
+      "id": 4475074,
+      "name": "gitlab-cs-tools",
+      "path": "gitlab-cs-tools",
+      "kind": "group",
+      "full_path": "gitlab-com/cs-tools/gitlab-cs-tools",
+      "parent_id": 10575238,
+      "avatar_url": null,
+      "web_url": "https://gitlab.com/groups/gitlab-com/cs-tools/gitlab-cs-tools"
+    }
+  }
+]

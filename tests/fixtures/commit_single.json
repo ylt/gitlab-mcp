@@ -1,0 +1,39 @@
+{
+  "project_id": 278964,
+  "id": "3aa0a9d772697316968905c014c00ad94bee9f33",
+  "short_id": "3aa0a9d7",
+  "created_at": "2026-04-01T12:48:00.000-04:00",
+  "parent_ids": [
+    "d147bf838eb61a1c5443e37d6df2505e32262ddd",
+    "d42bdd6b9422210887c3f42cc2e6393f67661ee2"
+  ],
+  "title": "Merge branch 'docs-simplify-titles' into 'master' ",
+  "message": "Merge branch 'docs-simplify-titles' into 'master' \n\nImprove search results by dropping 'GitLab' when not needed\n\nSee merge request https://gitlab.com/gitlab-org/gitlab/-/merge_requests/229778\n\nMerged-by: Lysanne Pinto <lpinto@gitlab.com>\nApproved-by: Lysanne Pinto <lpinto@gitlab.com>\nReviewed-by: GitLab Duo <gitlab-duo@gitlab.com>\nCo-authored-by: Marcel Amirault <mamirault@gitlab.com>",
+  "author_name": "Lysanne Pinto",
+  "author_email": "lpinto@gitlab.com",
+  "authored_date": "2026-04-01T12:48:00.000-04:00",
+  "committer_name": "GitLab",
+  "committer_email": "noreply@gitlab.com",
+  "committed_date": "2026-04-01T12:48:00.000-04:00",
+  "trailers": {},
+  "extended_trailers": {},
+  "web_url": "https://gitlab.com/gitlab-org/gitlab/-/commit/3aa0a9d772697316968905c014c00ad94bee9f33",
+  "stats": {
+    "additions": 9,
+    "deletions": 9,
+    "total": 18
+  },
+  "status": "running",
+  "last_pipeline": {
+    "id": 2424100278,
+    "iid": 5445803,
+    "project_id": 278964,
+    "sha": "3aa0a9d772697316968905c014c00ad94bee9f33",
+    "ref": "ruby-next",
+    "status": "running",
+    "source": "schedule",
+    "created_at": "2026-04-01T17:13:57.391Z",
+    "updated_at": "2026-04-01T17:14:15.071Z",
+    "web_url": "https://gitlab.com/gitlab-org/gitlab/-/pipelines/2424100278"
+  }
+}

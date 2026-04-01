@@ -1,0 +1,5 @@
+2026-04-01T16:45:56.599647Z 00O [0KRunning with gitlab-runner 18.10.0~pre.705.ge11dde90 (e11dde90)[0;m
+2026-04-01T16:45:56.599675Z 00O [0K  on green-5.shared-gitlab-org.runners-manager.gitlab.com/default nsYKW2GDK, system ID: s_a6b601368491[0;m
+2026-04-01T16:45:56.599689Z 00O [0K  feature flags: FF_NETWORK_PER_BUILD:true, FF_USE_FASTZIP:true, FF_USE_GIT_PROACTIVE_AUTH:true[0;m
+2026-04-01T16:45:56.599763Z 00O [0K[36;1mResolving secrets[0;m[0;m
+2026-04-01T16:45:56.600131Z 00O section_sta

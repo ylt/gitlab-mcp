@@ -1,0 +1,312 @@
+[
+  {
+    "project_id": 278964,
+    "id": 5271553868,
+    "action_name": "commented on",
+    "target_id": 3214229052,
+    "target_iid": 3214229052,
+    "target_type": "Note",
+    "author_id": 12417044,
+    "target_title": "Add snowplow custom emitter",
+    "created_at": "2026-04-01T17:20:20.435Z",
+    "note": {
+      "id": 3214229052,
+      "type": null,
+      "body": "I tested the changes according to the validations steps and it seems t o work I think.  I see SnowplowEmitterWorker jobs being enqueued and I see events in snowplow micro.\n\nJust a few questions around tests.",
+      "author": {
+        "id": 12417044,
+        "username": "j.seto",
+        "public_email": "jseto@gitlab.com",
+        "name": "Jerry Seto",
+        "state": "active",
+        "locked": false,
+        "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/12417044/avatar.png",
+        "web_url": "https://gitlab.com/j.seto"
+      },
+      "created_at": "2026-04-01T17:20:15.643Z",
+      "updated_at": "2026-04-01T17:20:15.643Z",
+      "system": false,
+      "noteable_id": 462220776,
+      "noteable_type": "MergeRequest",
+      "project_id": 278964,
+      "resolvable": false,
+      "confidential": false,
+      "internal": false,
+      "imported": false,
+      "imported_from": "none",
+      "noteable_iid": 226503,
+      "commands_changes": {}
+    },
+    "author": {
+      "id": 12417044,
+      "username": "j.seto",
+      "public_email": "jseto@gitlab.com",
+      "name": "Jerry Seto",
+      "state": "active",
+      "locked": false,
+      "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/12417044/avatar.png",
+      "web_url": "https://gitlab.com/j.seto"
+    },
+    "imported": false,
+    "imported_from": "none",
+    "author_username": "j.seto"
+  },
+  {
+    "project_id": 278964,
+    "id": 5271553862,
+    "action_name": "pushed to",
+    "target_id": 278964,
+    "target_iid": 278964,
+    "target_type": "Project",
+    "author_id": 1378158,
+    "target_title": "GitLab",
+    "created_at": "2026-04-01T17:20:20.231Z",
+    "author": {
+      "id": 1378158,
+      "username": "brytannia",
+      "public_email": "",
+      "name": "Tetiana Chupryna",
+      "state": "active",
+      "locked": false,
+      "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/1378158/avatar.png",
+      "web_url": "https://gitlab.com/brytannia"
+    },
+    "imported": false,
+    "imported_from": "none",
+    "push_data": {
+      "commit_count": 1,
+      "action": "pushed",
+      "ref_type": "branch",
+      "commit_from": "f94f2f87b318beeb64a369408969198b341922c9",
+      "commit_to": "1346d43c3eecec4b174431f7e0c2810b77a2e2c6",
+      "ref": "454437-backfill-epic-sent-notifications",
+      "commit_title": "Backfill epic sent notifications with work item ID",
+      "ref_count": null
+    },
+    "author_username": "brytannia"
+  },
+  {
+    "project_id": 278964,
+    "id": 5271553805,
+    "action_name": "commented on",
+    "target_id": 3214228990,
+    "target_iid": 3214228990,
+    "target_type": "Note",
+    "author_id": 11343020,
+    "target_title": "Optimize DAP for GPT OSS 120b",
+    "created_at": "2026-04-01T17:20:18.944Z",
+    "note": {
+      "id": 3214228990,
+      "type": null,
+      "body": "## Async Status Update 2026-04-01\n\n- **Progress & Status**:\n  - The `create_merge_request` tool continues to be a problem. Even with fallback descriptions and few-shot examples, the agent often ignores required parameters. This flakyness is the main reason why I don't think this model is capable enough to power DAP. \n  - I've tested `developer_unstable/experimental` which has access to `glab`. The agent fails to use the tool a few times mostly because having `/work_items/` in the URL is still not supported. There is an open MR that adds support for `work-items` to glab, but it hasn't been merged yet https://gitlab.com/gitlab-org/cli/-/merge_requests/2972.\n  - Two full tests still running for `developer_unstable/experimental` and `developer_next/experimental`. TBD\n\n- **Next Steps**:\n  - Try adding [a timeout](https://gitlab.com/gitlab-org/gitlab/-/work_items/579334#note_3197856362) to `run_command`. This should help to prevent the agent from running long test suites until it times out, but also quickly iterate if the command executed had an adverse effect by returning and letting the agent reassess the output.\n\n---\n\nHow confident are you that this will make it to the current milestone?\n\n- [ ] Not confident\n- [x] Slightly confident\n- [ ] Very confident",
+      "author": {
+        "id": 11343020,
+        "username": "bcardoso-",
+        "public_email": "bcardoso@gitlab.com",
+        "name": "Bruno Cardoso",
+        "state": "active",
+        "locked": false,
+        "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/11343020/avatar.png",
+        "web_url": "https://gitlab.com/bcardoso-"
+      },
+      "created_at": "2026-04-01T17:20:14.307Z",
+      "updated_at": "2026-04-01T17:20:14.307Z",
+      "system": false,
+      "noteable_id": 176413114,
+      "noteable_type": "Issue",
+      "project_id": 278964,
+      "resolvable": false,
+      "confidential": false,
+      "internal": false,
+      "imported": false,
+      "imported_from": "none",
+      "noteable_iid": 579334,
+      "commands_changes": {}
+    },
+    "author": {
+      "id": 11343020,
+      "username": "bcardoso-",
+      "public_email": "bcardoso@gitlab.com",
+      "name": "Bruno Cardoso",
+      "state": "active",
+      "locked": false,
+      "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/11343020/avatar.png",
+      "web_url": "https://gitlab.com/bcardoso-"
+    },
+    "imported": false,
+    "imported_from": "none",
+    "author_username": "bcardoso-"
+  },
+  {
+    "project_id": 278964,
+    "id": 5271553621,
+    "action_name": "commented on",
+    "target_id": 3214229019,
+    "target_iid": 3214229019,
+    "target_type": "DiffNote",
+    "author_id": 12417044,
+    "target_title": "Add snowplow custom emitter",
+    "created_at": "2026-04-01T17:20:15.107Z",
+    "note": {
+      "id": 3214229019,
+      "type": "DiffNote",
+      "body": "question:\nI'm not familiar with how exactly these options end up getting used.  Is it sufficient to test that it is nil or is it also important that the key itself is not present?",
+      "author": {
+        "id": 12417044,
+        "username": "j.seto",
+        "public_email": "jseto@gitlab.com",
+        "name": "Jerry Seto",
+        "state": "active",
+        "locked": false,
+        "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/12417044/avatar.png",
+        "web_url": "https://gitlab.com/j.seto"
+      },
+      "created_at": "2026-04-01T17:20:14.976Z",
+      "updated_at": "2026-04-01T17:20:14.976Z",
+      "system": false,
+      "noteable_id": 462220776,
+      "noteable_type": "MergeRequest",
+      "project_id": 278964,
+      "commit_id": null,
+      "position": {
+        "base_sha": "0c60f7284e3665a0f8f639667b68e5e714486a42",
+        "start_sha": "4891c323663c389d20645836df8f82a22be745dc",
+        "head_sha": "41cee7343b680c0f98b47137fd3f5080bc25b409",
+        "old_path": "spec/lib/gitlab/tracking/snowplow_job_emitter_spec.rb",
+        "new_path": "spec/lib/gitlab/tracking/snowplow_job_emitter_spec.rb",
+        "position_type": "text",
+        "old_line": null,
+        "new_line": 14,
+        "line_range": {
+          "start": {
+            "line_code": "cf7e498a3389c39260563c029998dff14df8215a_0_14",
+            "type": "new",
+            "old_line": null,
+            "new_line": 14
+          },
+          "end": {
+            "line_code": "cf7e498a3389c39260563c029998dff14df8215a_0_14",
+            "type": "new",
+            "old_line": null,
+            "new_line": 14
+          }
+        }
+      },
+      "resolvable": true,
+      "resolved": false,
+      "resolved_by": null,
+      "resolved_at": null,
+      "suggestions": [],
+      "confidential": false,
+      "internal": false,
+      "imported": false,
+      "imported_from": "none",
+      "noteable_iid": 226503,
+      "commands_changes": {}
+    },
+    "author": {
+      "id": 12417044,
+      "username": "j.seto",
+      "public_email": "jseto@gitlab.com",
+      "name": "Jerry Seto",
+      "state": "active",
+      "locked": false,
+      "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/12417044/avatar.png",
+      "web_url": "https://gitlab.com/j.seto"
+    },
+    "imported": false,
+    "imported_from": "none",
+    "author_username": "j.seto"
+  },
+  {
+    "project_id": 278964,
+    "id": 5271553612,
+    "action_name": "commented on",
+    "target_id": 3214229004,
+    "target_iid": 3214229004,
+    "target_type": "DiffNote",
+    "author_id": 12417044,
+    "target_title": "Add snowplow custom emitter",
+    "created_at": "2026-04-01T17:20:14.811Z",
+    "note": {
+      "id": 3214229004,
+      "type": "DiffNote",
+      "body": "```suggestion:-0+0\n      it 'removes on_failure callback from options' do\n```",
+      "author": {
+        "id": 12417044,
+        "username": "j.seto",
+        "public_email": "jseto@gitlab.com",
+        "name": "Jerry Seto",
+        "state": "active",
+        "locked": false,
+        "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/12417044/avatar.png",
+        "web_url": "https://gitlab.com/j.seto"
+      },
+      "created_at": "2026-04-01T17:20:14.711Z",
+      "updated_at": "2026-04-01T17:20:14.711Z",
+      "system": false,
+      "noteable_id": 462220776,
+      "noteable_type": "MergeRequest",
+      "project_id": 278964,
+      "commit_id": null,
+      "position": {
+        "base_sha": "0c60f7284e3665a0f8f639667b68e5e714486a42",
+        "start_sha": "4891c323663c389d20645836df8f82a22be745dc",
+        "head_sha": "41cee7343b680c0f98b47137fd3f5080bc25b409",
+        "old_path": "spec/lib/gitlab/tracking/snowplow_job_emitter_spec.rb",
+        "new_path": "spec/lib/gitlab/tracking/snowplow_job_emitter_spec.rb",
+        "position_type": "text",
+        "old_line": null,
+        "new_line": 17,
+        "line_range": {
+          "start": {
+            "line_code": "cf7e498a3389c39260563c029998dff14df8215a_0_17",
+            "type": "new",
+            "old_line": null,
+            "new_line": 17
+          },
+          "end": {
+            "line_code": "cf7e498a3389c39260563c029998dff14df8215a_0_17",
+            "type": "new",
+            "old_line": null,
+            "new_line": 17
+          }
+        }
+      },
+      "resolvable": true,
+      "resolved": false,
+      "resolved_by": null,
+      "resolved_at": null,
+      "suggestions": [
+        {
+          "id": 17251751,
+          "from_line": 17,
+          "to_line": 17,
+          "appliable": true,
+          "applied": false,
+          "from_content": "      it 'adds on_failure callback from options' do\n",
+          "to_content": "      it 'removes on_failure callback from options' do\n"
+        }
+      ],
+      "confidential": false,
+      "internal": false,
+      "imported": false,
+      "imported_from": "none",
+      "noteable_iid": 226503,
+      "commands_changes": {}
+    },
+    "author": {
+      "id": 12417044,
+      "username": "j.seto",
+      "public_email": "jseto@gitlab.com",
+      "name": "Jerry Seto",
+      "state": "active",
+      "locked": false,
+      "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/12417044/avatar.png",
+      "web_url": "https://gitlab.com/j.seto"
+    },
+    "imported": false,
+    "imported_from": "none",
+    "author_username": "j.seto"
+  }
+]

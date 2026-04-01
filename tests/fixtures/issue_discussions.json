@@ -1,0 +1,113 @@
+[
+  {
+    "project_id": "278964",
+    "issue_iid": "595535",
+    "id": "2b89887e42503e1e8f1a5e25002d5c68554dc441",
+    "individual_note": true,
+    "resolvable": false,
+    "notes": [
+      {
+        "id": 3214226867,
+        "type": null,
+        "body": "added gitlab-org#21571 as parent epic",
+        "author": {
+          "id": 4058309,
+          "username": "mnohr",
+          "public_email": "mnohr@gitlab.com",
+          "name": "Matt Nohr",
+          "state": "active",
+          "locked": false,
+          "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/4058309/avatar.png",
+          "web_url": "https://gitlab.com/mnohr"
+        },
+        "created_at": "2026-04-01T17:19:17.278Z",
+        "updated_at": "2026-04-01T17:19:17.280Z",
+        "system": true,
+        "noteable_id": 187498264,
+        "noteable_type": "Issue",
+        "project_id": 278964,
+        "resolvable": false,
+        "confidential": false,
+        "internal": false,
+        "imported": false,
+        "imported_from": "none",
+        "noteable_iid": 595535,
+        "commands_changes": {}
+      }
+    ]
+  },
+  {
+    "project_id": "278964",
+    "issue_iid": "595535",
+    "id": "f52afdb4f5ad7ef478ba03a81f80bfb590c4d588",
+    "individual_note": true,
+    "resolvable": false,
+    "notes": [
+      {
+        "id": 3214226869,
+        "type": null,
+        "body": "set status to **New**",
+        "author": {
+          "id": 4058309,
+          "username": "mnohr",
+          "public_email": "mnohr@gitlab.com",
+          "name": "Matt Nohr",
+          "state": "active",
+          "locked": false,
+          "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/4058309/avatar.png",
+          "web_url": "https://gitlab.com/mnohr"
+        },
+        "created_at": "2026-04-01T17:19:17.344Z",
+        "updated_at": "2026-04-01T17:19:17.346Z",
+        "system": true,
+        "noteable_id": 187498264,
+        "noteable_type": "Issue",
+        "project_id": 278964,
+        "resolvable": false,
+        "confidential": false,
+        "internal": false,
+        "imported": false,
+        "imported_from": "none",
+        "noteable_iid": 595535,
+        "commands_changes": {}
+      }
+    ]
+  },
+  {
+    "project_id": "278964",
+    "issue_iid": "595535",
+    "id": "73d19856668c57fa564845069901eac7cf58e6ce",
+    "individual_note": true,
+    "resolvable": false,
+    "notes": [
+      {
+        "id": 3214226874,
+        "type": null,
+        "body": "assigned to @wanpol",
+        "author": {
+          "id": 4058309,
+          "username": "mnohr",
+          "public_email": "mnohr@gitlab.com",
+          "name": "Matt Nohr",
+          "state": "active",
+          "locked": false,
+          "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/4058309/avatar.png",
+          "web_url": "https://gitlab.com/mnohr"
+        },
+        "created_at": "2026-04-01T17:19:17.463Z",
+        "updated_at": "2026-04-01T17:19:17.467Z",
+        "system": true,
+        "noteable_id": 187498264,
+        "noteable_type": "Issue",
+        "project_id": 278964,
+        "resolvable": false,
+        "confidential": false,
+        "internal": false,
+        "imported": false,
+        "imported_from": "none",
+        "noteable_iid": 595535,
+        "commands_changes": {}
+      }
+    ]
+  }
+]

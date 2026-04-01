@@ -1,0 +1,61 @@
+[
+  {
+    "commit": {
+      "id": "c8758357b16c9b8d648c6be1bed9e002c73cd0de",
+      "parent_ids": [
+        "9b6f1c59484a0c0e4cee9a27cfa4dc9a89683848"
+      ],
+      "message": "Document should start from h1 title. Also put badges on top for easier tracking",
+      "authored_date": "2015-07-16T12:13:09.000+00:00",
+      "author_name": "Dmitriy Zaporozhets",
+      "author_email": "dmitriy.zaporozhets@gmail.com",
+      "committed_date": "2015-07-16T12:13:09.000+00:00",
+      "committer_name": "Dmitriy Zaporozhets",
+      "committer_email": "dmitriy.zaporozhets@gmail.com",
+      "created_at": "2015-07-16T12:13:09.000+00:00"
+    },
+    "lines": [
+      "# GitLab",
+      ""
+    ]
+  },
+  {
+    "commit": {
+      "id": "f4872fc71bdd1b2ac3953f89d8fde2334088c81a",
+      "parent_ids": [
+        "89ef79f8b48f2bcff6417bc1e997054c5b27d6c6"
+      ],
+      "message": "Make source code on GitLab more prominent.\n",
+      "authored_date": "2015-03-25T17:55:26.000-07:00",
+      "author_name": "Sytse Sijbrandij",
+      "author_email": "sytse@gitlab.com",
+      "committed_date": "2015-03-25T17:55:26.000-07:00",
+      "committer_name": "Sytse Sijbrandij",
+      "committer_email": "sytse@gitlab.com",
+      "created_at": "2015-03-25T17:55:26.000-07:00"
+    },
+    "lines": [
+      "## Canonical source",
+      ""
+    ]
+  },
+  {
+    "commit": {
+      "id": "273733554cca2272e6a46fea9c97f6eddfe602fb",
+      "parent_ids": [
+        "710f5b3c6c3e87222472d49cd673723e442a3260"
+      ],
+      "message": "Remove misleading gitlab-foss reference in README.md\n",
+      "authored_date": "2019-09-30T11:03:31.000+00:00",
+      "author_name": "Alper Akgun",
+      "author_email": "aakgun@gitlab.com",
+      "committed_date": "2019-09-30T11:03:31.000+00:00",
+      "committer_name": "Achilleas Pipinellis",
+      "committer_email": "axil@gitlab.com",
+      "created_at": "2019-09-30T11:03:31.000+00:00"
+    },
+    "lines": [
+      "The canonical source of GitLab where all development takes place is [hosted on GitLab.com](https://gitlab.com/gitlab-org/gitlab)."
+    ]
+  }
+]

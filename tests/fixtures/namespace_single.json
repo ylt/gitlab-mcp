@@ -1,0 +1,18 @@
+{
+  "id": 58160,
+  "name": "Joe Carter",
+  "path": "ylt",
+  "kind": "user",
+  "full_path": "ylt",
+  "parent_id": null,
+  "avatar_url": "https://secure.gravatar.com/avatar/cb83fbe29a348de66217614445b6eb7a0cf4d6a654021ba1ec99b78bb74f0c30?s=80&d=identicon",
+  "web_url": "https://gitlab.com/ylt",
+  "billable_members_count": 1,
+  "seats_in_use": 1,
+  "max_seats_used": 0,
+  "max_seats_used_changed_at": null,
+  "end_date": null,
+  "plan": "free",
+  "trial_ends_on": null,
+  "trial": false
+}

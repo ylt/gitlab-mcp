@@ -1,0 +1,68 @@
+[
+  {
+    "id": 80939557,
+    "name": "lab5-weather-analyzer-kovalev",
+    "path": "lab5-weather-analyzer-kovalev",
+    "path_with_namespace": "kovalev-ist252t-projects/lab5-weather-analyzer-kovalev",
+    "namespace": {
+      "id": 126430071,
+      "name": "Kovalev-ist252t-Projects",
+      "path": "kovalev-ist252t-projects",
+      "kind": "group",
+      "full_path": "kovalev-ist252t-projects",
+      "parent_id": null,
+      "avatar_url": null,
+      "web_url": "https://gitlab.com/groups/kovalev-ist252t-projects"
+    },
+    "description": null,
+    "visibility": "public",
+    "web_url": "https://gitlab.com/kovalev-ist252t-projects/lab5-weather-analyzer-kovalev",
+    "created_at": "2026-04-01T17:20:24.894Z",
+    "last_activity_at": "2026-04-01T17:20:24.808Z",
+    "default_branch": "main"
+  },
+  {
+    "id": 80939552,
+    "name": "talos",
+    "path": "talos",
+    "path_with_namespace": "pierros/talos",
+    "namespace": {
+      "id": 858406,
+      "name": "Pierros Papadeas",
+      "path": "pierros",
+      "kind": "user",
+      "full_path": "pierros",
+      "parent_id": null,
+      "avatar_url": "/uploads/-/system/user/avatar/718581/avatar.png",
+      "web_url": "https://gitlab.com/pierros"
+    },
+    "description": null,
+    "visibility": "public",
+    "web_url": "https://gitlab.com/pierros/talos",
+    "created_at": "2026-04-01T17:20:13.408Z",
+    "last_activity_at": "2026-04-01T17:20:13.341Z",
+    "default_branch": "master"
+  },
+  {
+    "id": 80939546,
+    "name": "curse-project",
+    "path": "curse-project",
+    "path_with_namespace": "PrudenK/curse-project",
+    "namespace": {
+      "id": 126074405,
+      "name": "Pruden",
+      "path": "PrudenK",
+      "kind": "user",
+      "full_path": "PrudenK",
+      "parent_id": null,
+      "avatar_url": "https://secure.gravatar.com/avatar/6f21441f62f64b082661305de1c2b28fdc5246f5d53a88c182f49034b0d47d89?s=80&d=identicon",
+      "web_url": "https://gitlab.com/PrudenK"
+    },
+    "description": null,
+    "visibility": "public",
+    "web_url": "https://gitlab.com/PrudenK/curse-project",
+    "created_at": "2026-04-01T17:19:54.903Z",
+    "last_activity_at": "2026-04-01T17:19:54.798Z",
+    "default_branch": "main"
+  }
+]

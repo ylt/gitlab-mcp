@@ -1,0 +1,72 @@
+[
+  {
+    "id": "4ad5505d9ffb886a6f43cb5f0bc98171614b6a04",
+    "name": ".ai",
+    "type": "tree",
+    "path": ".ai",
+    "mode": "040000"
+  },
+  {
+    "id": "285906c04956cd219d28577c1667cc717040ed1f",
+    "name": ".devfile",
+    "type": "tree",
+    "path": ".devfile",
+    "mode": "040000"
+  },
+  {
+    "id": "a706caf1617a344b306562a43d4fe6584a7f1de2",
+    "name": ".eslint_todo",
+    "type": "tree",
+    "path": ".eslint_todo",
+    "mode": "040000"
+  },
+  {
+    "id": "2a09b69ac144ddcd32b3fdd42a25d49fdc811fcd",
+    "name": ".github",
+    "type": "tree",
+    "path": ".github",
+    "mode": "040000"
+  },
+  {
+    "id": "40988cb8e641b7b80a85d1ef0fe25174292c6110",
+    "name": ".gitlab",
+    "type": "tree",
+    "path": ".gitlab",
+    "mode": "040000"
+  },
+  {
+    "id": "6731862a7c1b41fba64fb6e33d0ee3d8af975440",
+    "name": ".lefthook",
+    "type": "tree",
+    "path": ".lefthook",
+    "mode": "040000"
+  },
+  {
+    "id": "ea761335b1f798863a8fbf1896ee2fc780e416e8",
+    "name": ".rubocop",
+    "type": "tree",
+    "path": ".rubocop",
+    "mode": "040000"
+  },
+  {
+    "id": "0579db3ac5862cf22e6f41a088cbb9393c196b75",
+    "name": ".rubocop_todo",
+    "type": "tree",
+    "path": ".rubocop_todo",
+    "mode": "040000"
+  },
+  {
+    "id": "ca3bce04dd10ca677fd92422c625b75d0c9f5fd9",
+    "name": ".vscode",
+    "type": "tree",
+    "path": ".vscode",
+    "mode": "040000"
+  },
+  {
+    "id": "df1154bde6cdbb474ed61cdcc91d997881aeee4e",
+    "name": "app",
+    "type": "tree",
+    "path": "app",
+    "mode": "040000"
+  }
+]

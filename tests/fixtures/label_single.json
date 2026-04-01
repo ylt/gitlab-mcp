@@ -1,0 +1,13 @@
+{
+  "project_id": "278964",
+  "id": 16558712,
+  "name": "#field-fyi",
+  "description": "Earmarked to notify the sales team of issue updates.",
+  "text_color": "#FFFFFF",
+  "description_html": "Earmarked to notify the sales team of issue updates.",
+  "color": "#34495E",
+  "archived": false,
+  "subscribed": false,
+  "priority": null,
+  "is_project_label": false
+}
