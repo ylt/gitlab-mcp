@@ -190,12 +190,8 @@ def get_milestone_issues(
     milestone = project.milestones.get(milestone_id)
     filters = build_filters(state=state)
     sort_params = build_sort(order_by=order_by, sort=sort)
-    issues = paginate(
-        milestone.issues,
-        per_page=per_page,
-        **filters,
-        **sort_params,
-    )
+    per_page = min(max(per_page, 1), 100)
+    issues = list(milestone.issues(per_page=per_page, **filters, **sort_params))
     return IssueSummary.from_gitlab(issues)
 
 
@@ -228,12 +224,8 @@ def get_milestone_merge_requests(
     milestone = project.milestones.get(milestone_id)
     filters = build_filters(state=state)
     sort_params = build_sort(order_by=order_by, sort=sort)
-    mrs = paginate(
-        milestone.merge_requests,
-        per_page=per_page,
-        **filters,
-        **sort_params,
-    )
+    per_page = min(max(per_page, 1), 100)
+    mrs = list(milestone.merge_requests(per_page=per_page, **filters, **sort_params))
     return MergeRequestSummary.from_gitlab(mrs)
 
 
@@ -256,16 +248,17 @@ def get_milestone_burndown_events(
     """
     project = get_project(project_id)
     milestone = project.milestones.get(milestone_id)
-    events = milestone.burndown_events.list(get_all=True)
+    path = f"{milestone.manager.path}/{milestone.encoded_id}/burndown_events"
+    raw_events = project.manager.gitlab.http_list(path, get_all=True)
     return [
         MilestoneBurndownEvent(
-            id=event.id,
-            created_at=event.created_at,
-            weight=event.weight,
-            user_id=event.user_id,
-            issue_id=event.issue_id,
+            id=event["id"],
+            created_at=event["created_at"],
+            weight=event.get("weight"),
+            user_id=event.get("user_id"),
+            issue_id=event.get("issue_id"),
         )
-        for event in events
+        for event in raw_events
     ]
 
 
@@ -284,9 +277,11 @@ def get_milestone_issue(
     """
     project = get_project(project_id)
     milestone = project.milestones.get(milestone_id)
-    issue_data: Any = milestone.issues.get(issue_iid)  # type: ignore[union-attr]
-    issue = issue_data
-    return IssueSummary.from_gitlab(issue)
+    issues = list(milestone.issues())
+    for issue in issues:
+        if issue.iid == issue_iid:
+            return IssueSummary.from_gitlab(issue)
+    raise ValueError(f"Issue !{issue_iid} not found in milestone {milestone_id}")
 
 
 @mcp.tool(

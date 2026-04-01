@@ -262,7 +262,7 @@ def list_release_links(project_id: str, tag_name: str) -> list[ReleaseLink]:
     """
     project = get_project(project_id)
     release = project.releases.get(tag_name)
-    links = release.releaselinks.list(get_all=True)
+    links = release.links.list(get_all=True)
     return ReleaseLink.from_gitlab(links)
 
 

@@ -379,7 +379,7 @@ def list_related_merge_requests(project_id: str, issue_iid: int) -> list[Related
     project = get_project(project_id)
     issue = project.issues.get(issue_iid)
     mrs = issue.related_merge_requests()
-    return RelatedMergeRequest.from_gitlab(mrs)
+    return [RelatedMergeRequest.model_validate(m) for m in mrs]
 
 
 @mcp.tool(
@@ -405,7 +405,7 @@ def add_time_spent(project_id: str, issue_iid: int, duration: str) -> IssueTimeS
     issue = project.issues.get(issue_iid)
     issue.add_spent_time(duration)
     stats = issue.time_stats()
-    return IssueTimeStats.from_gitlab(stats)  # type: ignore[arg-type]
+    return IssueTimeStats.model_validate(stats)
 
 
 @mcp.tool(annotations={"title": "Time Stats", "readOnlyHint": True, "openWorldHint": True})
@@ -419,4 +419,4 @@ def get_time_stats(project_id: str, issue_iid: int) -> IssueTimeStats:
     project = get_project(project_id)
     issue = project.issues.get(issue_iid)
     stats = issue.time_stats()
-    return IssueTimeStats.from_gitlab(stats)  # type: ignore[arg-type]
+    return IssueTimeStats.model_validate(stats)

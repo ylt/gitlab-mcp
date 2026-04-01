@@ -331,7 +331,7 @@ def summarize_merge_request_changes(
         change["status"] = _diff_status(change)
         change["additions"] = additions
         change["deletions"] = deletions
-        files.append(FileChange.from_gitlab(change))
+        files.append(FileChange.model_validate(change))
 
     return ChangesSummary.model_validate({
         "files_changed": len(files),
