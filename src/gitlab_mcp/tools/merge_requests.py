@@ -526,9 +526,10 @@ def list_merge_request_diffs(
     """
     project = get_project(project_id)
     mr = project.mergerequests.get(mr_iid)
-    diffs = mr.diffs.list(per_page=limit)
+    changes = mr.changes()
+    changes_list = changes.get("changes", []) if isinstance(changes, dict) else []
 
-    return [MergeRequestDiff.model_validate(d.attributes) for d in diffs]
+    return [MergeRequestDiff.model_validate(c) for c in changes_list[:limit]]
 
 
 @mcp.tool(
@@ -595,6 +596,7 @@ def get_merge_request_diffs(
     """
     project = get_project(project_id)
     mr = project.mergerequests.get(mr_iid)
-    diffs = mr.diffs.list(get_all=True)
+    changes = mr.changes()
+    changes_list = changes.get("changes", []) if isinstance(changes, dict) else []
 
-    return [MergeRequestDiff.model_validate(d.attributes) for d in diffs]
+    return [MergeRequestDiff.model_validate(c) for c in changes_list]
