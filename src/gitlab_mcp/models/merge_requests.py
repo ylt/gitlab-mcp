@@ -252,7 +252,7 @@ class MergeRequestVersion(BaseGitLabModel):
 
     id: int = Field(description="Version ID")
     created_at: str = Field(description="When created")
-    updated_at: str = Field(description="When updated")
+    updated_at: str | None = Field(None, description="When updated")
     head_commit_sha: str = Field(description="HEAD commit SHA")
     base_commit_sha: str = Field(description="Base commit SHA")
     start_commit_sha: str = Field(description="Start commit SHA")

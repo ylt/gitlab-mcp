@@ -458,20 +458,20 @@ def get_branch_diffs(
 @mcp.tool(annotations={"title": "Compare Branches", "readOnlyHint": True, "openWorldHint": True})
 def compare_branches(
     project_id: str,
-    from_ref: str,
-    to_ref: str,
+    source_branch: str,
+    target_branch: str,
     straight: bool = False,
 ) -> BranchComparison:
     """Compare two branches, tags, or commits.
 
     Args:
         project_id: Project ID or path
-        from_ref: Source branch/tag/commit
-        to_ref: Target branch/tag/commit
+        source_branch: Source branch/tag/commit
+        target_branch: Target branch/tag/commit
         straight: Use straight comparison (no merge base)
     """
     project = get_project(project_id)
-    comparison = project.repository_compare(from_ref, to_ref, straight=straight)
+    comparison = project.repository_compare(source_branch, target_branch, straight=straight)
     comparison_dict = cast(dict, comparison)
 
     commits = [
@@ -500,8 +500,8 @@ def compare_branches(
 
     return BranchComparison.model_validate(
         {
-            "from_ref": from_ref,
-            "to_ref": to_ref,
+            "from_ref": source_branch,
+            "to_ref": target_branch,
             "commits": commits,
             "diffs": diffs,
             "compare_timeout": comparison_dict.get("compare_timeout", False),

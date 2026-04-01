@@ -216,7 +216,7 @@ class ComparisonCommit(BaseGitLabModel):
 
     sha: str = Field(description="Short SHA (first 8 chars)")
     message: str
-    author: UserRef
+    author: str
     created: str
 
 
