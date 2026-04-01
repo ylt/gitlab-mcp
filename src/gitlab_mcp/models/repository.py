@@ -177,7 +177,7 @@ class CommitDetails(BaseGitLabModel):
     full_sha: str
     message: str
     title: str
-    author: UserRef
+    author: str
     email: str
     created: str
     web_url: str

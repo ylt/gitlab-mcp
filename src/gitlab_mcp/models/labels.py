@@ -1,6 +1,6 @@
 """Label models."""
 
-from pydantic import Field, field_serializer
+from pydantic import Field, field_serializer, field_validator
 from gitlab_mcp.models.base import BaseGitLabModel
 
 
@@ -10,7 +10,7 @@ class LabelSummary(BaseGitLabModel):
     id: int = Field(description="Unique label identifier")
     name: str = Field(description="Label name")
     color: str = Field(description="Label color (hex code)")
-    description: str = Field(default="", description="Label description")
+    description: str | None = Field(default=None, description="Label description")
     text_color: str = Field(default="#FFFFFF", description="Text color for contrast")
 
     @field_serializer("description")

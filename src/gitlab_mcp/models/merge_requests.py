@@ -199,9 +199,11 @@ class ApprovalRule(BaseGitLabModel):
 class ApprovalStateDetailed(BaseGitLabModel):
     """Detailed approval state for a merge request."""
 
+    iid: int = Field(description="MR number within the project")
     approved: bool = Field(description="Whether MR is approved")
     approved_by: list[UserRef] = Field(default_factory=list, description="Users who approved")
-    approvals_left: int = Field(description="Remaining approvals needed")
+    approvals_required: int = Field(0, description="Total approvals required")
+    approvals_left: int = Field(0, description="Remaining approvals needed")
     approval_rules_left: list[ApprovalRule] = Field(
         default_factory=list, description="Approval rules still needed", alias="rules"
     )

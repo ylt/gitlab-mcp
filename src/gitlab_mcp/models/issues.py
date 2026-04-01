@@ -1,23 +1,9 @@
 """Issue models."""
 
 from typing import Literal
-from pydantic import Field, field_validator, field_serializer
+from pydantic import Field, field_validator
 from gitlab_mcp.models.base import BaseGitLabModel, RelativeTime, SafeString
 from gitlab_mcp.models.misc import UserRef
-
-
-def format_seconds(seconds: int) -> str:
-    """Convert seconds to human-readable format."""
-    if seconds == 0:
-        return "0m"
-    hours = seconds // 3600
-    minutes = (seconds % 3600) // 60
-    parts: list[str] = []
-    if hours > 0:
-        parts.append(f"{hours}h")
-    if minutes > 0:
-        parts.append(f"{minutes}m")
-    return "".join(parts) if parts else "0m"
 
 
 class IssueSummary(BaseGitLabModel):
@@ -129,27 +115,11 @@ class RelatedMergeRequest(BaseGitLabModel):
 class IssueTimeStats(BaseGitLabModel):
     """Time tracking statistics for an issue."""
 
-    time_estimate: str = Field(description="Time estimate in human-readable format (e.g., '2h30m')")
-    time_estimate_seconds: int = Field(description="Time estimate in seconds")
-    total_time_spent: str = Field(description="Total time spent in human-readable format")
-    total_time_spent_seconds: int = Field(description="Total time spent in seconds")
+    time_estimate: int = Field(0, description="Time estimate in seconds")
+    total_time_spent: int = Field(0, description="Total time spent in seconds")
     human_time_estimate: str | None = Field(
         None, description="Human-readable time estimate from GitLab"
     )
     human_total_time_spent: str | None = Field(
         None, description="Human-readable total time spent from GitLab"
     )
-
-    @field_serializer("time_estimate")
-    def serialize_time_estimate(self, v: str | int) -> str:
-        """Convert time estimate seconds to human-readable format."""
-        if isinstance(v, str):
-            return v
-        return format_seconds(v)
-
-    @field_serializer("total_time_spent")
-    def serialize_total_time_spent(self, v: str | int) -> str:
-        """Convert total time spent seconds to human-readable format."""
-        if isinstance(v, str):
-            return v
-        return format_seconds(v)

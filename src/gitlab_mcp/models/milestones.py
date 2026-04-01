@@ -10,7 +10,7 @@ class MilestoneSummary(BaseGitLabModel):
 
     id: int
     title: str
-    description: str = Field(default="", description="Milestone description")
+    description: str | None = Field(default=None, description="Milestone description")
     state: Literal["active", "closed"]
     due_date: str | None = Field(None, description="Due date (YYYY-MM-DD)")
     start_date: str | None = Field(None, description="Start date (YYYY-MM-DD)")
@@ -41,7 +41,7 @@ class MilestonePromoteResult(BaseGitLabModel):
 
     id: int
     title: str
-    description: str = Field(default="", description="Milestone description")
+    description: str | None = Field(default=None, description="Milestone description")
     state: Literal["active", "closed"]
     due_date: str | None = Field(None, description="Due date (YYYY-MM-DD)")
     start_date: str | None = Field(None, description="Start date (YYYY-MM-DD)")
