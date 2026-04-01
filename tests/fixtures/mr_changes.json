@@ -1,0 +1,239 @@
+{
+  "id": 469700090,
+  "iid": 229854,
+  "project_id": 278964,
+  "title": "[OpenAPI3] Remove legacy spec",
+  "description": "## What does this MR do and why?\n\nRemoves legacy duplicate OAS3 spec.\n\n\n\nRelated to #595407",
+  "state": "merged",
+  "created_at": "2026-04-01T14:38:41.889Z",
+  "updated_at": "2026-04-01T16:43:00.732Z",
+  "merged_by": {
+    "id": 5833976,
+    "username": "mwoolf",
+    "public_email": "mwoolf@gitlab.com",
+    "name": "Max Woolf",
+    "state": "active",
+    "locked": false,
+    "avatar_url": "https://secure.gravatar.com/avatar/02fc02f38812a8176502fc94661fd083c3a56922eeb7671a6c2375ccea382ea0?s=80&d=identicon",
+    "web_url": "https://gitlab.com/mwoolf"
+  },
+  "merge_user": {
+    "id": 5833976,
+    "username": "mwoolf",
+    "public_email": "mwoolf@gitlab.com",
+    "name": "Max Woolf",
+    "state": "active",
+    "locked": false,
+    "avatar_url": "https://secure.gravatar.com/avatar/02fc02f38812a8176502fc94661fd083c3a56922eeb7671a6c2375ccea382ea0?s=80&d=identicon",
+    "web_url": "https://gitlab.com/mwoolf"
+  },
+  "merged_at": "2026-04-01T16:43:01.090Z",
+  "closed_by": null,
+  "closed_at": null,
+  "target_branch": "master",
+  "source_branch": "595407-remove-legacy-oas3-spec",
+  "user_notes_count": 3,
+  "upvotes": 0,
+  "downvotes": 0,
+  "author": {
+    "id": 21446049,
+    "username": "vwolanyk",
+    "public_email": "",
+    "name": "Vlad Wolanyk",
+    "state": "active",
+    "locked": false,
+    "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/21446049/avatar.png",
+    "web_url": "https://gitlab.com/vwolanyk"
+  },
+  "assignees": [
+    {
+      "id": 21446049,
+      "username": "vwolanyk",
+      "public_email": "",
+      "name": "Vlad Wolanyk",
+      "state": "active",
+      "locked": false,
+      "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/21446049/avatar.png",
+      "web_url": "https://gitlab.com/vwolanyk"
+    }
+  ],
+  "assignee": {
+    "id": 21446049,
+    "username": "vwolanyk",
+    "public_email": "",
+    "name": "Vlad Wolanyk",
+    "state": "active",
+    "locked": false,
+    "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/21446049/avatar.png",
+    "web_url": "https://gitlab.com/vwolanyk"
+  },
+  "reviewers": [
+    {
+      "id": 5833976,
+      "username": "mwoolf",
+      "public_email": "mwoolf@gitlab.com",
+      "name": "Max Woolf",
+      "state": "active",
+      "locked": false,
+      "avatar_url": "https://secure.gravatar.com/avatar/02fc02f38812a8176502fc94661fd083c3a56922eeb7671a6c2375ccea382ea0?s=80&d=identicon",
+      "web_url": "https://gitlab.com/mwoolf"
+    },
+    {
+      "id": 21826781,
+      "username": "GitLabDuo",
+      "public_email": null,
+      "name": "GitLab Duo",
+      "state": "active",
+      "locked": false,
+      "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/21826781/duo-bot.png",
+      "web_url": "https://gitlab.com/GitLabDuo"
+    }
+  ],
+  "source_project_id": 278964,
+  "target_project_id": 278964,
+  "labels": [
+    "backend",
+    "devops::developer experience",
+    "documentation",
+    "group::api platform",
+    "section::developer experience",
+    "type::maintenance",
+    "workflow::in dev"
+  ],
+  "draft": false,
+  "imported": false,
+  "imported_from": "none",
+  "work_in_progress": false,
+  "milestone": {
+    "id": 5948922,
+    "iid": 129,
+    "group_id": 9970,
+    "title": "18.11",
+    "description": "| Milestone | Quarter    | Start Date - Code Merging | End Date - Code Merging | Release Date  |\r\n|-----------|------------|---------------------------|-------------------------|---------------|\r\n| 18.11     | FY27-Q1-M3 | 2026-04-09                | 2026-04-10              | 2026-04-16    |\r\n",
+    "state": "active",
+    "created_at": "2025-03-26T00:25:30.642Z",
+    "updated_at": "2025-06-30T16:29:30.747Z",
+    "due_date": "2026-04-10",
+    "start_date": "2026-03-14",
+    "expired": false,
+    "web_url": "https://gitlab.com/groups/gitlab-org/-/milestones/129"
+  },
+  "merge_when_pipeline_succeeds": true,
+  "merge_status": "can_be_merged",
+  "detailed_merge_status": "not_open",
+  "merge_after": null,
+  "sha": "e1b01d11b8d2a8eb0233a01686f3191f16775e06",
+  "merge_commit_sha": "bbde5ce210a8ced7afbdad815e0e43aab3e4b45d",
+  "squash_commit_sha": "e1b01d11b8d2a8eb0233a01686f3191f16775e06",
+  "discussion_locked": null,
+  "should_remove_source_branch": true,
+  "force_remove_source_branch": true,
+  "prepared_at": "2026-04-01T14:39:06.784Z",
+  "reference": "!229854",
+  "references": {
+    "short": "!229854",
+    "relative": "!229854",
+    "full": "gitlab-org/gitlab!229854"
+  },
+  "web_url": "https://gitlab.com/gitlab-org/gitlab/-/merge_requests/229854",
+  "time_stats": {
+    "time_estimate": 0,
+    "total_time_spent": 0,
+    "human_time_estimate": null,
+    "human_total_time_spent": null
+  },
+  "squash": true,
+  "squash_on_merge": true,
+  "task_completion_status": {
+    "count": 0,
+    "completed_count": 0
+  },
+  "has_conflicts": false,
+  "blocking_discussions_resolved": true,
+  "approvals_before_merge": null,
+  "subscribed": false,
+  "changes_count": "1",
+  "latest_build_started_at": "2026-04-01T16:42:24.202Z",
+  "latest_build_finished_at": "2026-04-01T16:42:39.048Z",
+  "first_deployed_to_production_at": null,
+  "pipeline": {
+    "id": 2424043513,
+    "iid": 5445689,
+    "project_id": 278964,
+    "sha": "0df545eae389df004ce23a37780672cebf8fa870",
+    "ref": "refs/merge-requests/229854/train",
+    "status": "success",
+    "source": "merge_request_event",
+    "created_at": "2026-04-01T16:42:22.915Z",
+    "updated_at": "2026-04-01T16:42:39.071Z",
+    "web_url": "https://gitlab.com/gitlab-org/gitlab/-/pipelines/2424043513"
+  },
+  "head_pipeline": {
+    "id": 2424043513,
+    "iid": 5445689,
+    "project_id": 278964,
+    "sha": "0df545eae389df004ce23a37780672cebf8fa870",
+    "ref": "refs/merge-requests/229854/train",
+    "status": "success",
+    "source": "merge_request_event",
+    "created_at": "2026-04-01T16:42:22.915Z",
+    "updated_at": "2026-04-01T16:42:39.071Z",
+    "web_url": "https://gitlab.com/gitlab-org/gitlab/-/pipelines/2424043513",
+    "before_sha": "0df545eae389df004ce23a37780672cebf8fa870",
+    "tag": false,
+    "yaml_errors": null,
+    "user": {
+      "id": 5833976,
+      "username": "mwoolf",
+      "public_email": "mwoolf@gitlab.com",
+      "name": "Max Woolf",
+      "state": "active",
+      "locked": false,
+      "avatar_url": "https://secure.gravatar.com/avatar/02fc02f38812a8176502fc94661fd083c3a56922eeb7671a6c2375ccea382ea0?s=80&d=identicon",
+      "web_url": "https://gitlab.com/mwoolf"
+    },
+    "started_at": "2026-04-01T16:42:24.202Z",
+    "finished_at": "2026-04-01T16:42:39.048Z",
+    "committed_at": null,
+    "duration": 14,
+    "queued_duration": 1,
+    "coverage": null,
+    "detailed_status": {
+      "icon": "status_success",
+      "text": "Passed",
+      "label": "passed",
+      "group": "success",
+      "tooltip": "passed",
+      "has_details": true,
+      "details_path": "/gitlab-org/gitlab/-/pipelines/2424043513",
+      "illustration": null,
+      "favicon": "/assets/ci_favicons/favicon_status_success-8451333011eee8ce9f2ab25dc487fe24a8758c694827a582f17f42b0a90446a2.png"
+    },
+    "archived": false
+  },
+  "diff_refs": {
+    "base_sha": "9f3d1fb279199159f08f7ad8f98500a32878eef7",
+    "head_sha": "e1b01d11b8d2a8eb0233a01686f3191f16775e06",
+    "start_sha": "4891c323663c389d20645836df8f82a22be745dc"
+  },
+  "merge_error": null,
+  "user": {
+    "can_merge": false
+  },
+  "changes": [
+    {
+      "diff": "@@ -1,3630 +0,0 @@\n-openapi: 3.0.1\n-info:\n-  title: GitLab API\n-  version: v4\n-  description: |\n-    An OpenAPI definition for the GitLab REST API.\n-    Few API resources or endpoints are currently included.\n-    The intent is to expand this to match the entire Markdown documentation of the API:\n-    <https://docs.gitlab.com/api/>. Contributions are welcome.\n-\n-    When viewing this on gitlab.com, you can test API calls directly from the browser\n-    against the `gitlab.com` instance, if you are logged in.\n-    The feature uses the current [GitLab session cookie](https://docs.gitlab.com/api/rest/authentication/#session-cookie),\n-    so each request is made using your account.\n-\n-    Instructions for using this tool can be found in [Interactive API Documentation](https://docs.gitlab.com/api/openapi/openapi_interactive/)\n-  termsOfService: 'https://about.gitlab.com/terms/'\n-  license:\n-    name: CC BY-SA 4.0",
+      "collapsed": false,
+      "too_large": false,
+      "new_path": "doc/api/openapi/openapi.yaml",
+      "old_path": "doc/api/openapi/openapi.yaml",
+      "a_mode": "100644",
+      "b_mode": "0",
+      "new_file": false,
+      "renamed_file": false,
+      "deleted_file": true,
+      "generated_file": false
+    }
+  ],
+  "overflow": false
+}

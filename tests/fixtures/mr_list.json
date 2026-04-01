@@ -1,0 +1,317 @@
+[
+  {
+    "project_id": 278964,
+    "id": 469700090,
+    "iid": 229854,
+    "title": "[OpenAPI3] Remove legacy spec",
+    "description": "## What does this MR do and why?\n\nRemoves legacy duplicate OAS3 spec.\n\n\n\nRelated to #595407",
+    "state": "merged",
+    "created_at": "2026-04-01T14:38:41.889Z",
+    "updated_at": "2026-04-01T16:43:00.732Z",
+    "merged_by": {
+      "id": 5833976,
+      "username": "mwoolf",
+      "public_email": "mwoolf@gitlab.com",
+      "name": "Max Woolf",
+      "state": "active",
+      "locked": false,
+      "avatar_url": "https://secure.gravatar.com/avatar/02fc02f38812a8176502fc94661fd083c3a56922eeb7671a6c2375ccea382ea0?s=80&d=identicon",
+      "web_url": "https://gitlab.com/mwoolf"
+    },
+    "merge_user": {
+      "id": 5833976,
+      "username": "mwoolf",
+      "public_email": "mwoolf@gitlab.com",
+      "name": "Max Woolf",
+      "state": "active",
+      "locked": false,
+      "avatar_url": "https://secure.gravatar.com/avatar/02fc02f38812a8176502fc94661fd083c3a56922eeb7671a6c2375ccea382ea0?s=80&d=identicon",
+      "web_url": "https://gitlab.com/mwoolf"
+    },
+    "merged_at": "2026-04-01T16:43:01.090Z",
+    "closed_by": null,
+    "closed_at": null,
+    "target_branch": "master",
+    "source_branch": "595407-remove-legacy-oas3-spec",
+    "user_notes_count": 3,
+    "upvotes": 0,
+    "downvotes": 0,
+    "author": {
+      "id": 21446049,
+      "username": "vwolanyk",
+      "public_email": "",
+      "name": "Vlad Wolanyk",
+      "state": "active",
+      "locked": false,
+      "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/21446049/avatar.png",
+      "web_url": "https://gitlab.com/vwolanyk"
+    },
+    "assignees": [
+      {
+        "id": 21446049,
+        "username": "vwolanyk",
+        "public_email": "",
+        "name": "Vlad Wolanyk",
+        "state": "active",
+        "locked": false,
+        "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/21446049/avatar.png",
+        "web_url": "https://gitlab.com/vwolanyk"
+      }
+    ],
+    "assignee": {
+      "id": 21446049,
+      "username": "vwolanyk",
+      "public_email": "",
+      "name": "Vlad Wolanyk",
+      "state": "active",
+      "locked": false,
+      "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/21446049/avatar.png",
+      "web_url": "https://gitlab.com/vwolanyk"
+    },
+    "reviewers": [
+      {
+        "id": 5833976,
+        "username": "mwoolf",
+        "public_email": "mwoolf@gitlab.com",
+        "name": "Max Woolf",
+        "state": "active",
+        "locked": false,
+        "avatar_url": "https://secure.gravatar.com/avatar/02fc02f38812a8176502fc94661fd083c3a56922eeb7671a6c2375ccea382ea0?s=80&d=identicon",
+        "web_url": "https://gitlab.com/mwoolf"
+      },
+      {
+        "id": 21826781,
+        "username": "GitLabDuo",
+        "public_email": null,
+        "name": "GitLab Duo",
+        "state": "active",
+        "locked": false,
+        "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/21826781/duo-bot.png",
+        "web_url": "https://gitlab.com/GitLabDuo"
+      }
+    ],
+    "source_project_id": 278964,
+    "target_project_id": 278964,
+    "labels": [
+      "backend",
+      "devops::developer experience",
+      "documentation",
+      "group::api platform",
+      "section::developer experience",
+      "type::maintenance",
+      "workflow::in dev"
+    ],
+    "draft": false,
+    "imported": false,
+    "imported_from": "none",
+    "work_in_progress": false,
+    "milestone": {
+      "id": 5948922,
+      "iid": 129,
+      "group_id": 9970,
+      "title": "18.11",
+      "description": "| Milestone | Quarter    | Start Date - Code Merging | End Date - Code Merging | Release Date  |\r\n|-----------|------------|---------------------------|-------------------------|---------------|\r\n| 18.11     | FY27-Q1-M3 | 2026-04-09                | 2026-04-10              | 2026-04-16    |\r\n",
+      "state": "active",
+      "created_at": "2025-03-26T00:25:30.642Z",
+      "updated_at": "2025-06-30T16:29:30.747Z",
+      "due_date": "2026-04-10",
+      "start_date": "2026-03-14",
+      "expired": false,
+      "web_url": "https://gitlab.com/groups/gitlab-org/-/milestones/129"
+    },
+    "merge_when_pipeline_succeeds": true,
+    "merge_status": "can_be_merged",
+    "detailed_merge_status": "not_open",
+    "merge_after": null,
+    "sha": "e1b01d11b8d2a8eb0233a01686f3191f16775e06",
+    "merge_commit_sha": "bbde5ce210a8ced7afbdad815e0e43aab3e4b45d",
+    "squash_commit_sha": "e1b01d11b8d2a8eb0233a01686f3191f16775e06",
+    "discussion_locked": null,
+    "should_remove_source_branch": true,
+    "force_remove_source_branch": true,
+    "prepared_at": "2026-04-01T14:39:06.784Z",
+    "reference": "!229854",
+    "references": {
+      "short": "!229854",
+      "relative": "!229854",
+      "full": "gitlab-org/gitlab!229854"
+    },
+    "web_url": "https://gitlab.com/gitlab-org/gitlab/-/merge_requests/229854",
+    "time_stats": {
+      "time_estimate": 0,
+      "total_time_spent": 0,
+      "human_time_estimate": null,
+      "human_total_time_spent": null
+    },
+    "squash": true,
+    "squash_on_merge": true,
+    "task_completion_status": {
+      "count": 0,
+      "completed_count": 0
+    },
+    "has_conflicts": false,
+    "blocking_discussions_resolved": true,
+    "approvals_before_merge": null
+  },
+  {
+    "project_id": 278964,
+    "id": 469660681,
+    "iid": 229842,
+    "title": "ci: Skip pipeline on auto-deploy branch creation",
+    "description": "## What does this MR do and why?\n\nDo not create a pipeline when an auto-deploy branch (matching `^\\d+-\\d+-auto-deploy-\\d+$`) is first created (branch creation push), but still allow pipelines to run for subsequent commits pushed to the branch.\n\nWe use `CI_COMMIT_BEFORE_SHA` to detect branch creation. According to the [predefined variables documentation](https://docs.gitlab.com/ci/variables/predefined_variables/), it is:\n\n> \"always 0000000000000000000000000000000000000000 for merge request pipelines, scheduled pipelines, the first commit in pipelines for branches or tags, or when manually running a pipeline\"\n\n## How to set up and validate locally\n\nThe workflow rule change was validated on https://gitlab.com/dat.tang.gitlab/test-gitlab-ci using an equivalent `workflow.rules` config.\n\n1. Create a new auto-deploy branch from `main` - no pipeline should be triggered:\n   * There is only one pipeline on the `main` pipeline for the commit https://gitlab.com/dat.tang.gitlab/test-gitlab-ci/-/commit/7745d874e3896607425c274e4e0c8a7d6765cca6/pipelines\n2. Push a commit to that branch - a pipeline should run:\n   * There is a new pipeline run on the new commit on the `auto-deploy` branch https://gitlab.com/dat.tang.gitlab/test-gitlab-ci/-/commit/9909d2dd6fdd599e44421ab06ee4209cbe0cacdb/pipelines\n\n## MR acceptance checklist\n\n- [x] This MR does not require a documentation update.\n\nRef: https://gitlab.com/gitlab-com/gl-infra/delivery/-/work_items/21965",
+    "state": "merged",
+    "created_at": "2026-04-01T12:58:37.073Z",
+    "updated_at": "2026-04-01T16:21:30.426Z",
+    "merged_by": {
+      "id": 2524675,
+      "username": "skarbek",
+      "public_email": "",
+      "name": "John Skarbek",
+      "state": "active",
+      "locked": false,
+      "avatar_url": "https://secure.gravatar.com/avatar/51c7e8c38b82f8e13d7550fa1234e3bc62f5a3508b7ba313c90111faa6280371?s=80&d=identicon",
+      "web_url": "https://gitlab.com/skarbek"
+    },
+    "merge_user": {
+      "id": 2524675,
+      "username": "skarbek",
+      "public_email": "",
+      "name": "John Skarbek",
+      "state": "active",
+      "locked": false,
+      "avatar_url": "https://secure.gravatar.com/avatar/51c7e8c38b82f8e13d7550fa1234e3bc62f5a3508b7ba313c90111faa6280371?s=80&d=identicon",
+      "web_url": "https://gitlab.com/skarbek"
+    },
+    "merged_at": "2026-04-01T16:21:30.547Z",
+    "closed_by": null,
+    "closed_at": null,
+    "target_branch": "master",
+    "source_branch": "dattang/skip-pipeline-on-auto-deploy-branch-creation",
+    "user_notes_count": 7,
+    "upvotes": 0,
+    "downvotes": 0,
+    "author": {
+      "id": 15359194,
+      "username": "dat.tang.gitlab",
+      "public_email": "",
+      "name": "Dat Tang",
+      "state": "active",
+      "locked": false,
+      "avatar_url": "https://secure.gravatar.com/avatar/1c9d3ea240e53e3afe2cc6dd655bdcd7a1128a266a07eaae44258b49b2a6c527?s=80&d=identicon",
+      "web_url": "https://gitlab.com/dat.tang.gitlab"
+    },
+    "assignees": [
+      {
+        "id": 15359194,
+        "username": "dat.tang.gitlab",
+        "public_email": "",
+        "name": "Dat Tang",
+        "state": "active",
+        "locked": false,
+        "avatar_url": "https://secure.gravatar.com/avatar/1c9d3ea240e53e3afe2cc6dd655bdcd7a1128a266a07eaae44258b49b2a6c527?s=80&d=identicon",
+        "web_url": "https://gitlab.com/dat.tang.gitlab"
+      }
+    ],
+    "assignee": {
+      "id": 15359194,
+      "username": "dat.tang.gitlab",
+      "public_email": "",
+      "name": "Dat Tang",
+      "state": "active",
+      "locked": false,
+      "avatar_url": "https://secure.gravatar.com/avatar/1c9d3ea240e53e3afe2cc6dd655bdcd7a1128a266a07eaae44258b49b2a6c527?s=80&d=identicon",
+      "web_url": "https://gitlab.com/dat.tang.gitlab"
+    },
+    "reviewers": [
+      {
+        "id": 2222520,
+        "username": "dawsmith",
+        "public_email": "dsmith@gitlab.com",
+        "name": "Dave Smith",
+        "state": "active",
+        "locked": false,
+        "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/2222520/avatar.png",
+        "web_url": "https://gitlab.com/dawsmith"
+      },
+      {
+        "id": 2524675,
+        "username": "skarbek",
+        "public_email": "",
+        "name": "John Skarbek",
+        "state": "active",
+        "locked": false,
+        "avatar_url": "https://secure.gravatar.com/avatar/51c7e8c38b82f8e13d7550fa1234e3bc62f5a3508b7ba313c90111faa6280371?s=80&d=identicon",
+        "web_url": "https://gitlab.com/skarbek"
+      },
+      {
+        "id": 21826781,
+        "username": "GitLabDuo",
+        "public_email": null,
+        "name": "GitLab Duo",
+        "state": "active",
+        "locked": false,
+        "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/21826781/duo-bot.png",
+        "web_url": "https://gitlab.com/GitLabDuo"
+      }
+    ],
+    "source_project_id": 278964,
+    "target_project_id": 278964,
+    "labels": [
+      "backend",
+      "pipeline::expedited",
+      "pipeline:spec-only",
+      "type::maintenance"
+    ],
+    "draft": false,
+    "imported": false,
+    "imported_from": "none",
+    "work_in_progress": false,
+    "milestone": {
+      "id": 5948922,
+      "iid": 129,
+      "group_id": 9970,
+      "title": "18.11",
+      "description": "| Milestone | Quarter    | Start Date - Code Merging | End Date - Code Merging | Release Date  |\r\n|-----------|------------|---------------------------|-------------------------|---------------|\r\n| 18.11     | FY27-Q1-M3 | 2026-04-09                | 2026-04-10              | 2026-04-16    |\r\n",
+      "state": "active",
+      "created_at": "2025-03-26T00:25:30.642Z",
+      "updated_at": "2025-06-30T16:29:30.747Z",
+      "due_date": "2026-04-10",
+      "start_date": "2026-03-14",
+      "expired": false,
+      "web_url": "https://gitlab.com/groups/gitlab-org/-/milestones/129"
+    },
+    "merge_when_pipeline_succeeds": true,
+    "merge_status": "can_be_merged",
+    "detailed_merge_status": "not_open",
+    "merge_after": null,
+    "sha": "2de48f5b31e6a74c9b68d73446e44157f21e600c",
+    "merge_commit_sha": "78484edfa75b665c1620b5235e2f55fe37b89d2f",
+    "squash_commit_sha": "eed985a10a5660f7619e401f5e01c7d7fd5dd915",
+    "discussion_locked": null,
+    "should_remove_source_branch": true,
+    "force_remove_source_branch": true,
+    "prepared_at": "2026-04-01T12:59:05.271Z",
+    "reference": "!229842",
+    "references": {
+      "short": "!229842",
+      "relative": "!229842",
+      "full": "gitlab-org/gitlab!229842"
+    },
+    "web_url": "https://gitlab.com/gitlab-org/gitlab/-/merge_requests/229842",
+    "time_stats": {
+      "time_estimate": 0,
+      "total_time_spent": 0,
+      "human_time_estimate": null,
+      "human_total_time_spent": null
+    },
+    "squash": true,
+    "squash_on_merge": true,
+    "task_completion_status": {
+      "count": 1,
+      "completed_count": 1
+    },
+    "has_conflicts": false,
+    "blocking_discussions_resolved": true,
+    "approvals_before_merge": null
+  }
+]

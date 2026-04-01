@@ -1,0 +1,41 @@
+[
+  {
+    "project_id": 278964,
+    "id": 2424049310,
+    "iid": 5445697,
+    "sha": "3c2480fc0ee69eac0efebebf221fefaeaf8292d3",
+    "ref": "refs/merge-requests/229361/train",
+    "status": "success",
+    "source": "merge_request_event",
+    "created_at": "2026-04-01T16:45:47.072Z",
+    "updated_at": "2026-04-01T16:46:13.066Z",
+    "web_url": "https://gitlab.com/gitlab-org/gitlab/-/pipelines/2424049310",
+    "name": "Ruby 3.3.10 MR"
+  },
+  {
+    "project_id": 278964,
+    "id": 2424047522,
+    "iid": 5445695,
+    "sha": "bbde5ce210a8ced7afbdad815e0e43aab3e4b45d",
+    "ref": "master",
+    "status": "running",
+    "source": "push",
+    "created_at": "2026-04-01T16:44:40.325Z",
+    "updated_at": "2026-04-01T16:44:44.425Z",
+    "web_url": "https://gitlab.com/gitlab-org/gitlab/-/pipelines/2424047522",
+    "name": "Ruby 3.3.10 master branch"
+  },
+  {
+    "project_id": 278964,
+    "id": 2424047341,
+    "iid": 5445694,
+    "sha": "d7a1edeb863416a4aa699fcdfc388b44199b0dd3",
+    "ref": "refs/merge-requests/228940/train",
+    "status": "success",
+    "source": "merge_request_event",
+    "created_at": "2026-04-01T16:44:37.229Z",
+    "updated_at": "2026-04-01T16:44:59.070Z",
+    "web_url": "https://gitlab.com/gitlab-org/gitlab/-/pipelines/2424047341",
+    "name": "Ruby 3.3.10 MR"
+  }
+]

@@ -1,0 +1,60 @@
+{
+  "commit": {
+    "id": "7370c6c559b9161b5c919087015d1393ef9a2f57",
+    "short_id": "7370c6c5",
+    "created_at": "2026-04-02T01:39:47.000+09:00",
+    "parent_ids": [
+      "45d16e4f6a2f41c9774da501a7b604aaafa90045"
+    ],
+    "title": "Clarify why SSH keys can't be masked",
+    "message": "Clarify why SSH keys can't be masked\n",
+    "author_name": "Marcel Amirault",
+    "author_email": "mamirault@gitlab.com",
+    "authored_date": "2026-04-02T01:39:47.000+09:00",
+    "committer_name": "Marcel Amirault",
+    "committer_email": "mamirault@gitlab.com",
+    "committed_date": "2026-04-02T01:39:47.000+09:00",
+    "trailers": {},
+    "extended_trailers": {},
+    "web_url": "https://gitlab.com/gitlab-org/gitlab/-/commit/7370c6c559b9161b5c919087015d1393ef9a2f57"
+  },
+  "commits": [
+    {
+      "id": "7370c6c559b9161b5c919087015d1393ef9a2f57",
+      "short_id": "7370c6c5",
+      "created_at": "2026-04-02T01:39:47.000+09:00",
+      "parent_ids": [
+        "45d16e4f6a2f41c9774da501a7b604aaafa90045"
+      ],
+      "title": "Clarify why SSH keys can't be masked",
+      "message": "Clarify why SSH keys can't be masked\n",
+      "author_name": "Marcel Amirault",
+      "author_email": "mamirault@gitlab.com",
+      "authored_date": "2026-04-02T01:39:47.000+09:00",
+      "committer_name": "Marcel Amirault",
+      "committer_email": "mamirault@gitlab.com",
+      "committed_date": "2026-04-02T01:39:47.000+09:00",
+      "trailers": {},
+      "extended_trailers": {},
+      "web_url": "https://gitlab.com/gitlab-org/gitlab/-/commit/7370c6c559b9161b5c919087015d1393ef9a2f57"
+    }
+  ],
+  "diffs": [
+    {
+      "diff": "@@ -55,8 +55,10 @@ To add an SSH key to your project, add the key as a [file type CI/CD variable](.\n 1. Set **Visibility** to **Visible**.\n \n    > [!note]\n-   > If **Visibility** is set to **Masked** or **Masked and hidden**, you cannot save\n-   > SSH keys because they contain whitespace characters.\n+   > The visibility setting must be **Visible** because SSH keys contain whitespace characters,\n+   > and **Masked** or **Masked and hidden** variables cannot contain whitespace characters.\n+   > Never run a command like `cat` or `tee` on the variable because the SSH key is not masked\n+   > if output to the job log.\n \n 1. In the **Key** text box, enter the name of the variable. For example, `SSH_PRIVATE_KEY`.\n 1. In the **Value** text box, paste the private key content.\n",
+      "collapsed": false,
+      "too_large": false,
+      "new_path": "doc/ci/jobs/ssh_keys.md",
+      "old_path": "doc/ci/jobs/ssh_keys.md",
+      "a_mode": "100644",
+      "b_mode": "100644",
+      "new_file": false,
+      "renamed_file": false,
+      "deleted_file": false,
+      "generated_file": null
+    }
+  ],
+  "compare_timeout": false,
+  "compare_same_ref": false,
+  "web_url": "https://gitlab.com/gitlab-org/gitlab/-/compare/45d16e4f6a2f41c9774da501a7b604aaafa90045...7370c6c559b9161b5c919087015d1393ef9a2f57"
+}

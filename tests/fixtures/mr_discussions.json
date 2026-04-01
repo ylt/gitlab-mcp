@@ -1,0 +1,113 @@
+[
+  {
+    "project_id": "278964",
+    "mr_iid": "229854",
+    "id": "c7b8e5ca640638057f1df63c0c224db559419800",
+    "individual_note": true,
+    "resolvable": false,
+    "notes": [
+      {
+        "id": 3213666520,
+        "type": null,
+        "body": "requested review from @GitLabDuo",
+        "author": {
+          "id": 21446049,
+          "username": "vwolanyk",
+          "public_email": "",
+          "name": "Vlad Wolanyk",
+          "state": "active",
+          "locked": false,
+          "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/21446049/avatar.png",
+          "web_url": "https://gitlab.com/vwolanyk"
+        },
+        "created_at": "2026-04-01T14:38:42.102Z",
+        "updated_at": "2026-04-01T14:38:42.107Z",
+        "system": true,
+        "noteable_id": 469700090,
+        "noteable_type": "MergeRequest",
+        "project_id": 278964,
+        "resolvable": false,
+        "confidential": false,
+        "internal": false,
+        "imported": false,
+        "imported_from": "none",
+        "noteable_iid": 229854,
+        "commands_changes": {}
+      }
+    ]
+  },
+  {
+    "project_id": "278964",
+    "mr_iid": "229854",
+    "id": "173e9ade273f18bc28940a52c760de1cef421038",
+    "individual_note": true,
+    "resolvable": false,
+    "notes": [
+      {
+        "id": 3213666542,
+        "type": null,
+        "body": "assigned to @vwolanyk",
+        "author": {
+          "id": 21446049,
+          "username": "vwolanyk",
+          "public_email": "",
+          "name": "Vlad Wolanyk",
+          "state": "active",
+          "locked": false,
+          "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/21446049/avatar.png",
+          "web_url": "https://gitlab.com/vwolanyk"
+        },
+        "created_at": "2026-04-01T14:38:42.316Z",
+        "updated_at": "2026-04-01T14:38:42.341Z",
+        "system": true,
+        "noteable_id": 469700090,
+        "noteable_type": "MergeRequest",
+        "project_id": 278964,
+        "resolvable": false,
+        "confidential": false,
+        "internal": false,
+        "imported": false,
+        "imported_from": "none",
+        "noteable_iid": 229854,
+        "commands_changes": {}
+      }
+    ]
+  },
+  {
+    "project_id": "278964",
+    "mr_iid": "229854",
+    "id": "52487e81484accc842091bde624a6f66af7522f3",
+    "individual_note": true,
+    "resolvable": false,
+    "notes": [
+      {
+        "id": 3213676802,
+        "type": null,
+        "body": "<table>\n  <thead>\n    <tr>\n      <th width=\"5%\"></th>\n      <th width=\"95%\" data-danger-table=\"true\" data-kind=\"Warning\">\n          1 Warning\n      </th>\n     </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <td>:warning:</td>\n      <td data-sticky=\"false\">This merge request is definitely too big (3630 lines changed), please split it into multiple merge requests.</td>\n    </tr>\n  </tbody>\n</table>\n<table>\n  <thead>\n    <tr>\n      <th width=\"5%\"></th>\n      <th width=\"95%\" data-danger-table=\"true\" data-kind=\"Message\">\n          2 Messages\n      </th>\n     </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <td>:book:</td>\n      <td data-sticky=\"false\"><strong><a href=\"https://docs.gitlab.com/ee/development/changelog.html\">CHANGELOG missing</a></strong>:</p>\n\n<p>If this merge request needs a changelog entry, add the <code>Changelog</code> trailer to the commit message you want to add to the changelog.</p>\n\n<p>If this merge request <a href=\"https://docs.gitlab.com/ee/development/changelog.html#what-warrants-a-changelog-entry\">doesn't need a CHANGELOG entry</a>, feel free to ignore this message.</td>\n    </tr>\n    <tr>\n      <td>:book:</td>\n      <td data-sticky=\"false\">This merge request adds or changes documentation files and requires Technical Writing review. The review should happen before merge, but can be post-merge if the merge request is time sensitive.</td>\n    </tr>\n  </tbody>\n</table>\n\n\n\n## Documentation review\n\nThe following files require a review from a technical writer:\n\n* `doc/api/openapi/openapi.yaml` ([Link to current live version](https://docs.gitlab.com/api/openapi/openapi.yaml))\n\nThe review does not need to block merging this merge request. See the:\n\n- [Metadata for the `*.md` files](https://docs.gitlab.com/ee/development/documentation/#metadata) that you've changed. The first few lines of each `*.md` file identify the stage and group most closely associated with your docs change.\n- The [Technical Writer assigned](https://handbook.gitlab.com/handbook/product/ux/technical-writing/#assignments) for that stage and group.\n- [Documentation workflows](https://docs.gitlab.com/development/documentation/workflow/) for information on when to assign a merge request for review.\n\n\nWe advise getting a review from GitLab Duo Code. You can assign `@GitLabDuo` as a reviewer to this merge request.\n\n## Reviewer roulette\n\n\n\n| Category | Reviewer | Maintainer |\n| -------- | -------- | ---------- |\n| ~\"backend\" | `@srushik` [![profile link](https://gitlab-org.gitlab.io/gitlab-roulette/status-png/_user.png){width=12}](https://gitlab.com/srushik) ![current availability](https://gitlab-org.gitlab.io/gitlab-roulette/status-png/srushik.png){width=12} (UTC+5.5, 9.5 hours ahead of author) | `@alipniagov` [![profile link](https://gitlab-org.gitlab.io/gitlab-roulette/status-png/_user.png){width=12}](https://gitlab.com/alipniagov) ![current availability](https://gitlab-org.gitlab.io/gitlab-roulette/status-png/alipniagov.png){width=12} (UTC+2, 6 hours ahead of author) |\n\n\nPlease refer to [documentation page](https://docs.gitlab.com/development/code_review/#reviewer-roulette)\nfor guidance on how you can benefit from the Reviewer Roulette, or use the\n[GitLab Review Workload Dashboard](https://gitlab-org.gitlab.io/gitlab-roulette/)\nto find other available reviewers.\n\n\n\n**If needed, you can retry the [\ud83d\udd01 `danger-review` job](https://gitlab.com/gitlab-org/gitlab/-/jobs/13747742803) that generated this comment.**\n\n<p align=\"right\" data-meta=\"generated_by_d028ee\">\n  Generated by :no_entry_sign: <a href=\"https://github.com/danger/danger/\">Danger</a>\n</p>",
+        "author": {
+          "id": 28850366,
+          "username": "project_278964_bot_d10f7ffdb05c889168416678645d29bb",
+          "public_email": null,
+          "name": "****",
+          "state": "active",
+          "locked": false,
+          "avatar_url": "https://secure.gravatar.com/avatar/00c51d86baf06020d622b8526a61bb04fcdba211bc86f9f2084f84c3bcfc7229?s=80&d=identicon",
+          "web_url": "https://gitlab.com/project_278964_bot_d10f7ffdb05c889168416678645d29bb"
+        },
+        "created_at": "2026-04-01T14:40:36.729Z",
+        "updated_at": "2026-04-01T16:35:56.936Z",
+        "system": false,
+        "noteable_id": 469700090,
+        "noteable_type": "MergeRequest",
+        "project_id": 278964,
+        "resolvable": false,
+        "confidential": false,
+        "internal": false,
+        "imported": false,
+        "imported_from": "none",
+        "noteable_iid": 229854,
+        "commands_changes": {}
+      }
+    ]
+  }
+]
