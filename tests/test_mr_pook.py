@@ -20,6 +20,11 @@ from gitlab_mcp.tools.merge_requests import (
     list_merge_request_diffs,
     get_merge_request_diffs,
     list_merge_request_versions,
+    get_merge_request_approval_state,
+    get_merge_request_notes,
+    get_merge_request_note,
+    get_merge_request_version,
+    summarize_merge_request_changes,
 )
 
 
@@ -195,3 +200,79 @@ def test_mr_version_missing_updated_at_is_ok():
     results = list_merge_request_versions(PROJECT_ID, MR_IID)
     assert len(results) == 1
     assert results[0].updated_at is None
+
+
+MR_NOTE_ID = 3214111707
+MR_VERSION_ID = 1731848037
+
+
+def test_get_merge_request_approval_state():
+    """Smoke test: get_merge_request_approval_state returns ApprovalStateDetailed."""
+    _mock_project()
+    _mock_mr_single()
+    pook.get(
+        f"{BASE_URL}/projects/{PROJECT_ID}/merge_requests/{MR_IID}/approvals",
+        reply=200,
+        response_json=load("mr_approval_state.json"),
+    )
+    result = get_merge_request_approval_state(PROJECT_ID, MR_IID)
+    assert result.iid == MR_IID
+    assert hasattr(result, "approved")
+    assert hasattr(result, "approvals_required")
+
+
+def test_get_merge_request_notes():
+    """Smoke test: get_merge_request_notes returns a list of MergeRequestNote objects."""
+    _mock_project()
+    _mock_mr_single()
+    pook.get(
+        f"{BASE_URL}/projects/{PROJECT_ID}/merge_requests/{MR_IID}/notes",
+        reply=200,
+        response_json=load("mr_notes_list.json"),
+    )
+    result = get_merge_request_notes(PROJECT_ID, MR_IID)
+    assert isinstance(result, list)
+    assert len(result) > 0
+    assert hasattr(result[0], "id")
+    assert hasattr(result[0], "body")
+
+
+def test_get_merge_request_note():
+    """Smoke test: get_merge_request_note returns the correct MergeRequestNote."""
+    _mock_project()
+    _mock_mr_single()
+    pook.get(
+        f"{BASE_URL}/projects/{PROJECT_ID}/merge_requests/{MR_IID}/notes/{MR_NOTE_ID}",
+        reply=200,
+        response_json=load("mr_note_single.json"),
+    )
+    result = get_merge_request_note(PROJECT_ID, MR_IID, MR_NOTE_ID)
+    assert result.id == MR_NOTE_ID
+    assert hasattr(result, "body")
+
+
+def test_get_merge_request_version():
+    """Smoke test: get_merge_request_version returns a MergeRequestVersion."""
+    _mock_project()
+    _mock_mr_single()
+    pook.get(
+        f"{BASE_URL}/projects/{PROJECT_ID}/merge_requests/{MR_IID}/versions/{MR_VERSION_ID}",
+        reply=200,
+        response_json=load("mr_version_single.json"),
+    )
+    result = get_merge_request_version(PROJECT_ID, MR_IID, MR_VERSION_ID)
+    assert result.id == MR_VERSION_ID
+    assert hasattr(result, "head_commit_sha")
+    assert hasattr(result, "base_commit_sha")
+
+
+def test_summarize_merge_request_changes():
+    """Smoke test: summarize_merge_request_changes returns a ChangesSummary."""
+    _mock_project()
+    _mock_mr_single()
+    _mock_mr_changes()
+    result = summarize_merge_request_changes(PROJECT_ID, MR_IID)
+    assert hasattr(result, "files_changed")
+    assert isinstance(result.files_changed, int)
+    assert hasattr(result, "files")
+    assert isinstance(result.files, list)
