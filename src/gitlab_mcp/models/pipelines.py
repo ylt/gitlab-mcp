@@ -66,7 +66,8 @@ class JobSummary(BaseGitLabModel):
         if not v:
             return None
         if isinstance(v, list) and len(v) > 0 and isinstance(v[0], dict):
-            return [artifact.get("file_format", artifact.get("filename", "")) for artifact in v]
+            names = [artifact.get("file_format") or artifact.get("filename") for artifact in v]
+            return [a for a in names if a] or None
         if isinstance(v, list):
             return [a for a in v if a is not None]
         return v
