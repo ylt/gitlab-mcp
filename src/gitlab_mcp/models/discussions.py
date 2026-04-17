@@ -11,6 +11,29 @@ from gitlab_mcp.models.base import (
 )
 
 
+def _format_file_position(position) -> str | dict | None:
+    """Flatten a GitLab note position to 'path:line' or {old, new} on rename."""
+    if not isinstance(position, dict):
+        return None
+    if position.get("position_type") not in (None, "text"):
+        return None
+    new_path = position.get("new_path")
+    old_path = position.get("old_path")
+    new_line = position.get("new_line")
+    old_line = position.get("old_line")
+
+    def _join(path, line):
+        if not path:
+            return None
+        return f"{path}:{line}" if line else path
+
+    new = _join(new_path, new_line)
+    old = _join(old_path, old_line)
+    if new_path and old_path and new_path != old_path:
+        return {"old": old, "new": new}
+    return new or old
+
+
 class NoteSummary(BaseGitLabModel):
     """Note/comment summary."""
 
@@ -22,6 +45,10 @@ class NoteSummary(BaseGitLabModel):
         default=None, description="When last updated (ISO timestamp)"
     )
     system: bool = Field(default=False, description="True if this is a system-generated note")
+    file: str | dict | None = Field(
+        default=None,
+        description="File location as 'path:line' (or {old, new} on rename) for code review notes",
+    )
     resolvable: bool | None = Field(default=False, description="True if this note can be resolved", exclude=True)
     resolved: bool | None = Field(default=False, description="True if this note is resolved", exclude=True)
 
@@ -30,10 +57,12 @@ class NoteSummary(BaseGitLabModel):
     def flatten_author(cls, data):
         """Flatten nested author dict to username string."""
         if isinstance(data, dict):
+            data = dict(data)
             author = data.get("author")
             if isinstance(author, dict):
-                data = dict(data)
                 data["author"] = author.get("username", "unknown")
+            if "position" in data and "file" not in data:
+                data["file"] = _format_file_position(data.pop("position"))
             return data
         author = getattr(data, "author", None)
         if isinstance(author, dict):
@@ -44,6 +73,7 @@ class NoteSummary(BaseGitLabModel):
                 "created_at": getattr(data, "created_at", ""),
                 "updated_at": getattr(data, "updated_at", None),
                 "system": getattr(data, "system", False),
+                "file": _format_file_position(getattr(data, "position", None)),
                 "resolvable": getattr(data, "resolvable", False),
                 "resolved": getattr(data, "resolved", False),
             }

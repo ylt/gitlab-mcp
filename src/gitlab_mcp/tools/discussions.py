@@ -124,6 +124,7 @@ def _filter_discussions(
                 author="",
                 created_at=None,
                 system=False,
+                file=None,
                 resolvable=False,
                 resolved=False,
             )
